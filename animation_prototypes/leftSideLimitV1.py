@@ -1,10 +1,10 @@
 from manim import *
 class hello(Scene):
     def construct(self):
+        def func(x):
+            return -1 * x**2 + 2
         
         #self.camera.background_color=GREEN
-        xText = Text("x = ").to_edge(UL)
-        functionText = Text("f(x) = ").to_edge(UL).shift([0, -1, 0])
 
         ax = Axes(
             x_range=[-5, 5], y_range=[-15, 5], axis_config={"include_tip": False},
@@ -12,13 +12,10 @@ class hello(Scene):
         labels = ax.get_axis_labels(x_label="x", y_label="f(x)")
 
         xTracker = ValueTracker(-4)
-        yTracker = ValueTracker(-14)
 
         x_value = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1, 0, 0]).set_value(xTracker.get_value()))
-        y_value = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(yTracker.get_value()))
+        y_value = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(func(xTracker.get_value())))
         
-        def func(x):
-            return -1 * x**2 + 2
         graph = ax.plot(func, color=MAROON, discontinuities=[1])
 
         initial_point = [ax.coords_to_point(xTracker.get_value(), func(xTracker.get_value()))]
@@ -28,9 +25,22 @@ class hello(Scene):
         x_space = np.linspace(*ax.x_range[:2],200)
         maximum_index = func(x_space).argmax()
 
+        xText = MathTex(r"x = ").to_edge(UL)
+        functionText = MathTex(r"f(x) = ").to_edge(UL).shift([0, -1, 0])
+        limitText = MathTex(r"\lim \limits_{x \to 0^-} f(x) = 2").to_edge(UL).shift([0, -2.75, 0])
+
         self.add(ax, labels, graph, dot, x_value, xText, y_value, functionText)
         
-        self.play(xTracker.animate.set_value(x_space[maximum_index]), yTracker.animate.set_value(func(x_space[maximum_index])), run_time = 3)
+        self.play(xTracker.animate.set_value(x_space[maximum_index]), run_time = 3)
+
+        self.remove(x_value)
+        self.remove(y_value)
+        x_value = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1, 0, 0]).set_value(-0.00001)
+        y_value = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(1.99999)
+        self.add(x_value)
+        self.add(y_value)
+
+        self.play(FadeIn(limitText))
         
         self.wait(3)
         
