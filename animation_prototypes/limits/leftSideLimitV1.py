@@ -22,7 +22,7 @@ class hello(Scene):
         dot = Dot(point=initial_point)
 
         dot.add_updater(lambda x: x.move_to(ax.c2p(xTracker.get_value(), func(xTracker.get_value()))))
-        x_space = np.linspace(*ax.x_range[:2],200)
+        x_space = np.linspace(-10, 0, 20)
         maximum_index = func(x_space).argmax()
 
         xText = MathTex(r"x = ").to_edge(UL)
@@ -31,7 +31,7 @@ class hello(Scene):
 
         self.add(ax, labels, graph, dot, x_value, xText, y_value, functionText)
         
-        self.play(xTracker.animate.set_value(x_space[maximum_index]), run_time = 3)
+        self.play(xTracker.animate.set_value(x_space[maximum_index] - 0.05), run_time = 3)
 
         self.remove(x_value)
         self.remove(y_value)
