@@ -1,0 +1,17 @@
+Pre-calculus
+
+Discontinuities
+theres holes and jumps and infinites
+
+Limits
+when something gets real close but not all the way
+-----
+Calculus
+Derivatives 
+rates of change, slopes
+
+Riemann Sums 
+add a lot of boxes
+
+Integrals 
+the anti-derivative
