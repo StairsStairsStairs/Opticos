@@ -3,5 +3,6 @@ from limit_animation_runner import hello
 
 if __name__ == "__main__":
     approach = float(input("Enter value you want x to approach: "))
-    s = hello(GREEN, approach)
+    side = int(input("Do you want to approach it from the left or from the right? (-1 for left, 1 for right): "))
+    s = hello(GREEN, approach, side)
     s.render()
