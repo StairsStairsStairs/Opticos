@@ -13,6 +13,7 @@ class hello(Scene):
 
     #Function that is graphed out and used to find output values at each frame
     def func(self, fstr, x, op):
+        #print(x, 1)
         if isinstance(x, (np.float32, np.float64)):
             x = float(x)
 
@@ -26,15 +27,17 @@ class hello(Scene):
                 else:
                     fstr = fstr[:i] + x + fstr[i+1:]
             i += 1
-        
+        if (fstr[0:2] == "--"):
+            fstr = "-1*" + fstr[1:len(fstr)]
+
         #Replaces instances of - between two  numbers to be +-
         i = 0
         while(i < len(fstr)):
             #Notes checks that theres no e character befor the minus sign to accomodate <num>e-n scientific representation
-            if (fstr[i] == "-" and fstr[i - 1] != "+" and fstr[i - 1] != "e" and i != 0):
+            if (fstr[i] == "-" and fstr[i - 1] != "+" and fstr[i - 1] != "*" and fstr[i - 1] != "e" and i != 0):
                 fstr = fstr[:i] + "+-1*" + fstr[i+1:]
             i += 1
-        
+            #print(x, 4)
         #divide string into different parts based on the current operation
         nums = fstr.split(op)
         
@@ -43,12 +46,13 @@ class hello(Scene):
         for i in range(0, len(nums)):
             if not(nums[i].isdigit()):
                 if (op == "+"):
-                    nums[i] = self.func(nums[i], 'x', '*')
+                    nums[i] = self.func(nums[i], x, '*')
                 elif (op == "*"):
-                    nums[i] = self.func(nums[i], 'x', '^')
+                    nums[i] = self.func(nums[i], x, '^')
                     
         #Perfrom nums[0] <op> nums[1] <op> ... <op> nums[len(nums - 1)]
-        
+        #print(nums, x)
+        #print(x)
         total = float(nums[0])
         for i in range(1, len(nums)):
             if (op == '+'):
@@ -91,7 +95,7 @@ class hello(Scene):
 
         graph_group = VGroup(ax, graph)
         graph_group.scale(scale) 
-        graph_group.to_corner(UR)
+        graph_group.to_edge(RIGHT)
 
         #In manim, a value tracker is an object that displays a constantly updated value
         #By default it starts at some initial value and increases or decreases at a constant rate
@@ -106,7 +110,7 @@ class hello(Scene):
 
         #Define starting point at the initial point xTracker is defined to
         initial_point = [ax.coords_to_point(xTracker.get_value(), self.func(self.function, xTracker.get_value(), "+"))]
-        dot = Dot(point = initial_point).scale(scale) #Creates point that moves along function
+        dot = Dot(point = initial_point).scale(0.75) #Creates point that moves along function
 
         #Updates the x-coordinate of the point to match the most recent value of xTracker
         #also plugs the x-coordinate into func() to get the y-value
