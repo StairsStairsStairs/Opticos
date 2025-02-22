@@ -7,6 +7,36 @@ from scipy.optimize import minimize_scalar
 # manim ./animation_prototypes/integrals/renderIntegral.py
 
 class hello(Scene):
+    def createIntegralBoxXValues(self, numValues):
+        totalRange = userInfo.integral_xRange[1] - userInfo.integral_xRange[0]
+        toReturn = [userInfo.integral_xRange[0]]
+        for i in range(numValues):
+            toReturn.append(toReturn[-1]+(totalRange/numValues))
+        return toReturn
+    
+    def createIntegralBox(self, x_lower, x_upper, function, ax, aproxWithLower=True):
+        if aproxWithLower:
+            rect = Polygon(
+                ax.c2p(x_lower,0),
+                ax.c2p(x_lower,function(x_lower)),
+                ax.c2p(x_upper,function(x_lower)),
+                ax.c2p(x_upper,0),
+                color=userInfo.integral_box_color_outline,
+                fill_color=userInfo.integral_box_color_fill,
+                fill_opacity=1.0
+            )
+        else:
+            rect = Polygon(
+                ax.c2p(x_lower,0),
+                ax.c2p(x_lower,function(x_upper)),
+                ax.c2p(x_upper,function(x_upper)),
+                ax.c2p(x_upper,0),
+                color=userInfo.integral_box_color_outline,
+                fill_color=userInfo.integral_box_color_fill,
+                fill_opacity=1.0
+            )
+        return rect
+
     def construct(self):
         func = userInfo.continuous_function
         self.camera.background_color = ORANGE
@@ -30,16 +60,7 @@ class hello(Scene):
             axis_config={"include_numbers": True, "include_tip": False},
         ).move_to((-1.75,0,0))
         parabola = ax.plot(lambda x: func(x), new_x_range[0:2], color=BLUE)
-
-        # Make first box for integral (one x-step)
-        dot = Dot().move_to(ax.coords_to_point(0, func(0)))
-        rect = Polygon(
-            ax.c2p(0,0),
-            ax.c2p(0,func(0)),
-            ax.c2p(new_x_range[2],func(0)),
-            ax.c2p(new_x_range[2],0),
-            color=RED
-        )
+        parabola.set_z_index(2)
 
         # Labels
         # equation_label = MathTex("y = x^2").to_edge(UP)
@@ -48,6 +69,14 @@ class hello(Scene):
         self.play(Create(ax))
         self.play(Create(parabola))
 
-        self.play(Create(dot))
-        self.play(Create(rect))
+        # Make All boxes
+        xVals = createIntegralBoxXValues(10)
+        for i in range(7):
+            # offset = i * new_x_range[2]
+            # rect = self.createIntegralBox(userInfo.integral_xRange[0] + offset, userInfo.integral_xRange[0] + offset + new_x_range[2], func, ax)
+            rect = self.createIntegralBox(xVals[i], xVals[i+1], func, ax)
+            self.play(Create(rect))
+            self.wait(0.5)
+
+        # self.play(Create(rect))
         self.wait(1)
