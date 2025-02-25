@@ -1,6 +1,16 @@
 from tkinter import *
+import cv2
+'''
+THINGS TO REDO:
+Frame tuple system
+Play buttons
+Double window size and button size
 
-
+THINGS TO REMEMBER:
+git pull BEFORE trying to commit
+Save backup of file in case you mess it up
+DONT delete your local repo before checking that you didnt overwrite your files.
+'''
 
 class GUI(object):
     def __init__(self, master):
@@ -13,45 +23,50 @@ class GUI(object):
         # Layout constants
         buttonWidth = 30
         buttonPadx = 2
-        buttonPady = 1
-
+        buttonPady = 10
+        screenResolution = (900, 600)
 
         self.parent = master
+        self.parent.geometry(str(screenResolution[0]) + 'x' + str(screenResolution[1]))
+
         self.chapterText = dict()
+        self.frames = dict()
+        self.currentFrameID = (0, 0)
 
         self.mainFrame = Frame(master, bg="Gray", relief=GROOVE)
         self.infoFrame = Frame(master, bg="Blue", relief=RAISED )
 
         # MAIN FRAME
         quitButton = newButton(self.mainFrame, self.terminate, 'Quit')
-        quitButton.pack(pady=20, side=BOTTOM)
+        quitButton.pack(pady=10, side=BOTTOM)
 
-        self.subjectFrames = []
+        self.frames[(0, 0)] = self.mainFrame
         subjects = open("gui/exampleText.txt").read().split('-----\n')
-        topicCount = 0
 
         # Read from text file, creating frames with buttons for each topic.
-        for subject in subjects:
+        for i in range(len(subjects)):
+            subject = subjects[i]
             frame = Frame(master, bg="Gray", relief=GROOVE)
-            subjectTitle = subject[:subject.index('\n')].strip()
-            button = newButton(self.mainFrame, lambda c=self.mainFrame, n=frame: self.switchFrame(c,n), subjectTitle)
-            button.pack(pady=10, side=TOP)
+            self.frames[(i+1, 0)] = frame
 
+
+            subjectTitle = subject[:subject.index('\n')].strip()
+            subjectButton = newButton(self.mainFrame, lambda n=i+1: self.switchFrame((n, 0)), subjectTitle)
+            subjectButton.pack(pady=10, side=TOP)
+            backButton = newButton(frame, lambda: self.switchFrame((0, 0)), "Back")
+            backButton.pack(pady=10, side=BOTTOM)
 
             topics = subject.split('\n\n')[1:]
-            for topic in topics:
+            for j in range(len(topics)):
+                topic = topics[j]
                 topicTitle = topic[:topic.index('\n')].strip()
                 text = topic[topic.index('\n'):].strip()
-                self.chapterText[topicCount] = text
+                self.frames[(i+1, j+1)] = self.infoFrame
+                self.chapterText[(i+1, j+1)] = text
+                
 
-                button = newButton(frame, lambda c=frame, n=self.infoFrame, t=topicCount: self.switchFrame(c,n,t), topicTitle)
-                button.pack(pady=10, side=TOP)
-
-                topicCount += 1
-
-
-
-            self.subjectFrames.append(frame)
+                topicButton = newButton(frame, lambda n=i+1, m=j+1: self.switchFrame((n, m)), topicTitle)
+                topicButton.pack(pady=10, side=TOP)
 
         self.mainFrame.pack(expand=True, fill=BOTH)
 
@@ -61,23 +76,55 @@ class GUI(object):
 
         self.text = StringVar()
         self.text.set("test")
-        label = Label(self.infoFrame, textvariable=self.text, pady=2)
+        label = Label(self.infoFrame, textvariable=self.text, pady=2, 
+                      wraplength=int(.7*screenResolution[0]))
         label.pack(pady=20, side=TOP)
 
-        quitButton = newButton(self.infoFrame, self.terminate, 'Quit')
-        quitButton.pack(pady=20, side=BOTTOM)
+        backButton = newButton(self.infoFrame, lambda: self.switchFrame((self.currentFrameID[0], 0)), 'Back')
+        backButton.pack(pady=10, side=BOTTOM)
 
-        backButton = newButton(self.infoFrame, lambda: self.switchFrame(self.infoFrame, self.mainFrame), 'Back')
-        backButton.pack(side=BOTTOM)
+        videoButton = newButton(self.infoFrame, self.playVideo, "Play")
+        videoButton.pack(pady=10, side=TOP)
 
 
-    def switchFrame(self, current, next, topic=-1):
-        current.pack_forget()
+    '''
+    switchFrame takes the frame ID of the frame that is going to be loaded
+    Frame IDs work as follows:
+        (0, 0) is the main frame
+        (#, 0) is the #th subject frame (i.e. (1, 0) is the frame for precalculus topics)
+        (#, #) is the info frame with the text of topic #.# (i.e (1, 1) = topic 1.1: precalc.discontinuities)
+    '''
+    def switchFrame(self, nextID):
+        self.frames[self.currentFrameID].pack_forget()
+        next = self.frames[nextID]
         next.pack(expand=True, fill=BOTH)
-        if topic != -1:
-            self.lastFrame = current    
-            self.text.set(self.chapterText[topic])
-        
+        if nextID[1] != 0:
+            self.text.set(self.chapterText[nextID])
+        self.currentFrameID = nextID
+
+    # Currently only plays one video, will either use a dict or generate the video through manim on demand   
+    def playVideo(self):
+        cap = cv2.VideoCapture('gui/stockmp4.mp4')
+        if (cap.isOpened()== False):
+            print("Error opening video file")
+            return
+
+        cv2.namedWindow('Animation')
+        cv2.moveWindow('Animation', 40, 30)
+        # Read video frame by frame
+        while(cap.isOpened()):
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            cv2.imshow('Animation', frame)
+            
+            # Press Q on keyboard to exit
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                break
+
+        cap.release()
+        cv2.destroyAllWindows()
 
     def terminate(self):
         self.parent.destroy()
@@ -87,6 +134,5 @@ class GUI(object):
 
 if __name__ == '__main__':
     root = Tk()
-    root.geometry("450x300")
     app = GUI(root)
     root.mainloop()
