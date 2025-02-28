@@ -1,24 +1,37 @@
 from tkinter import *
 import cv2
-'''
-THINGS TO REDO:
-Frame tuple system
-Play buttons
-Double window size and button size
 
-THINGS TO REMEMBER:
-git pull BEFORE trying to commit
-Save backup of file in case you mess it up
-DONT delete your local repo before checking that you didnt overwrite your files.
-'''
 
-class GUI(object):
+class Opticos(object):
     def __init__(self, master):
-
+        # Create and configure new button object
         def newButton(parent, cmd, buttontext):
             button = Button(parent, command=cmd, text = buttontext)
             button.configure(width=buttonWidth, padx=buttonPadx, pady=buttonPady )
             return button
+
+        # Create a new information frame for a topic
+        def newPage(text, canInputFunction=False):
+            frame = Frame(master, bg="Blue", relief=RAISED)
+            textLabel = Label(frame, text=text, pady=2, 
+                        wraplength=int(.7*screenResolution[0]))
+            textLabel.pack(pady=10, side=TOP)
+
+            if canInputFunction:
+                entryFrame = Frame(frame, bg="Blue", relief=RAISED, width=200, height=50)
+                entryFrame.pack(side=TOP, pady=(50, 0))
+                entryLabel = Label(entryFrame, text="Function: ", pady=2, bg="Blue")
+                entryLabel.pack(padx=10, side=LEFT)
+                functionBox = Entry(entryFrame)
+                functionBox.pack(padx=5, side=RIGHT)
+
+            videoButton = newButton(frame, self.playVideo, "Play")
+            videoButton.pack(pady=10, side=TOP)
+
+            backButton = newButton(frame, lambda: self.switchFrame((self.currentFrameID[0], 0)), 'Back')
+            backButton.pack(pady=10, side=BOTTOM)
+            return frame
+
 
         # Layout constants
         buttonWidth = 30
@@ -26,17 +39,17 @@ class GUI(object):
         buttonPady = 10
         screenResolution = (900, 600)
 
+        # Member variables
         self.parent = master
         self.parent.geometry(str(screenResolution[0]) + 'x' + str(screenResolution[1]))
 
         self.chapterText = dict()
         self.frames = dict()
         self.currentFrameID = (0, 0)
-
         self.mainFrame = Frame(master, bg="Gray", relief=GROOVE)
-        self.infoFrame = Frame(master, bg="Blue", relief=RAISED )
 
-        # MAIN FRAME
+
+        # Main frame
         quitButton = newButton(self.mainFrame, self.terminate, 'Quit')
         quitButton.pack(pady=10, side=BOTTOM)
 
@@ -49,7 +62,6 @@ class GUI(object):
             frame = Frame(master, bg="Gray", relief=GROOVE)
             self.frames[(i+1, 0)] = frame
 
-
             subjectTitle = subject[:subject.index('\n')].strip()
             subjectButton = newButton(self.mainFrame, lambda n=i+1: self.switchFrame((n, 0)), subjectTitle)
             subjectButton.pack(pady=10, side=TOP)
@@ -61,10 +73,9 @@ class GUI(object):
                 topic = topics[j]
                 topicTitle = topic[:topic.index('\n')].strip()
                 text = topic[topic.index('\n'):].strip()
-                self.frames[(i+1, j+1)] = self.infoFrame
+                self.frames[(i+1, j+1)] = newPage(text, True)
                 self.chapterText[(i+1, j+1)] = text
                 
-
                 topicButton = newButton(frame, lambda n=i+1, m=j+1: self.switchFrame((n, m)), topicTitle)
                 topicButton.pack(pady=10, side=TOP)
 
@@ -72,34 +83,16 @@ class GUI(object):
 
 
 
-        # INFORMATION FRAME
 
-        self.text = StringVar()
-        self.text.set("test")
-        label = Label(self.infoFrame, textvariable=self.text, pady=2, 
-                      wraplength=int(.7*screenResolution[0]))
-        label.pack(pady=20, side=TOP)
-
-        backButton = newButton(self.infoFrame, lambda: self.switchFrame((self.currentFrameID[0], 0)), 'Back')
-        backButton.pack(pady=10, side=BOTTOM)
-
-        videoButton = newButton(self.infoFrame, self.playVideo, "Play")
-        videoButton.pack(pady=10, side=TOP)
-
-
-    '''
-    switchFrame takes the frame ID of the frame that is going to be loaded
-    Frame IDs work as follows:
-        (0, 0) is the main frame
-        (#, 0) is the #th subject frame (i.e. (1, 0) is the frame for precalculus topics)
-        (#, #) is the info frame with the text of topic #.# (i.e (1, 1) = topic 1.1: precalc.discontinuities)
-    '''
+    # switchFrame takes the frame ID of the frame that is going to be loaded
+    # Frame IDs work as follows:
+    #     (0, 0) is the main frame
+    #     (#, 0) is the #th subject frame (i.e. (1, 0) is the frame for precalculus topics)
+    #     (#, #) is the page with the text of topic #.# (i.e (1, 1) is topic 1.1: precalc->discontinuities)
     def switchFrame(self, nextID):
         self.frames[self.currentFrameID].pack_forget()
         next = self.frames[nextID]
         next.pack(expand=True, fill=BOTH)
-        if nextID[1] != 0:
-            self.text.set(self.chapterText[nextID])
         self.currentFrameID = nextID
 
     # Currently only plays one video, will either use a dict or generate the video through manim on demand   
@@ -126,13 +119,13 @@ class GUI(object):
         cap.release()
         cv2.destroyAllWindows()
 
+    # Quit the program
     def terminate(self):
         self.parent.destroy()
 
 
-
-
 if __name__ == '__main__':
     root = Tk()
-    app = GUI(root)
+    root.title("Opticos")
+    app = Opticos(root)
     root.mainloop()
