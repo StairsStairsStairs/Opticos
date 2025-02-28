@@ -14,12 +14,12 @@ class hello(Scene):
             toReturn.append(toReturn[-1]+(totalRange/numValues))
         return toReturn
     
-    def createIntegralBox(self, x_lower, x_upper, function, ax, aproxWithLower=True):
+    def createIntegralBox(self, x_lower, x_upper, ax, aproxWithLower=True):
         if aproxWithLower:
             rect = Polygon(
                 ax.c2p(x_lower,0),
-                ax.c2p(x_lower,function(x_lower)),
-                ax.c2p(x_upper,function(x_lower)),
+                ax.c2p(x_lower,userInfo.continuous_function(x_lower)),
+                ax.c2p(x_upper,userInfo.continuous_function(x_lower)),
                 ax.c2p(x_upper,0),
                 color=userInfo.integral_box_color_outline,
                 fill_color=userInfo.integral_box_color_fill,
@@ -36,6 +36,24 @@ class hello(Scene):
                 fill_opacity=1.0
             )
         return rect
+
+    def createEntireSetOfBoxes(self, ax, numBoxesNow, oldBoxes=None):
+        # if oldBoxes != None:
+        #     for box in oldBoxes:
+        #         self.remove(box)
+        numBoxesOld = len(oldBoxes) if oldBoxes != None else numBoxesNow
+        EveryXAmtTransform = numBoxesNow/numBoxesOld
+
+        xVals = self.createIntegralBoxXValues(numBoxesNow)
+        allRects = []
+        for i in range(numBoxesNow):
+            rect = self.createIntegralBox(xVals[i], xVals[i+1], ax)
+            allRects.append(rect)
+            if oldBoxes != None and i < numBoxesOld:
+                self.play(Transform(oldBoxes[int(i)], rect), run_time=0.1)
+            else:
+                self.play(Create(rect), run_time=0.1)
+        return allRects
 
     def construct(self):
         func = userInfo.continuous_function
@@ -69,14 +87,9 @@ class hello(Scene):
         self.play(Create(ax))
         self.play(Create(parabola))
 
-        # Make All boxes
-        xVals = createIntegralBoxXValues(10)
-        for i in range(7):
-            # offset = i * new_x_range[2]
-            # rect = self.createIntegralBox(userInfo.integral_xRange[0] + offset, userInfo.integral_xRange[0] + offset + new_x_range[2], func, ax)
-            rect = self.createIntegralBox(xVals[i], xVals[i+1], func, ax)
-            self.play(Create(rect))
-            self.wait(0.5)
+        allBoxes = self.createEntireSetOfBoxes(ax, 10)
+        self.createEntireSetOfBoxes(ax, 20, allBoxes)
+
 
         # self.play(Create(rect))
         self.wait(1)
