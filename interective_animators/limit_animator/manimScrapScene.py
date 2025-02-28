@@ -1,9 +1,24 @@
 from manim import *
 class hello(Scene):
     def construct(self):
-        coordsRect = Rectangle(width = 5, height = 2, color = BLUE).to_edge(UL).shift([-0.5, 0.5, 0])
-        x_value = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1, 0.3, 0])
-        y_value = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.7, -0.75, 0])
-        xText = MathTex(r"x = ").to_edge(UL).shift([-0.3, 0.2, 0])
-        functionText = MathTex(r"f(x) = ").to_edge(UL).shift([-0.3, -0.7, 0])
-        self.add(coordsRect, x_value, xText, y_value, functionText)
+        def func(x):
+            return x ** 2
+        
+        boundScale = 15
+        ax = Axes(
+            x_range=[-1*boundScale, boundScale], y_range=[-1*boundScale, boundScale], axis_config={"include_tip": True},
+            x_length = 7,
+            y_length = 7,
+            x_axis_config={"numbers_to_include": range(-4, 5, 2)},  # Auto number x-axis
+            y_axis_config={"numbers_to_include": range(-4, 5, 2)},  # Auto number y-axis
+        )
+        labels = ax.get_axis_labels(x_label="x", y_label="f(x)") # Labels each axis
+
+        #Draw graph that plot out function defined by func()
+        graph = ax.plot(lambda x: func(x), color = GREEN, discontinuities=[1])
+
+        graph_group = VGroup(ax, graph)
+        
+        graph_group.to_edge(RIGHT)
+        self.add(ax)
+        self.wait(2)

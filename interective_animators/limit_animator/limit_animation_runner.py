@@ -1,4 +1,5 @@
 from manim import *
+import math
 
 #config.frame_width = 8  # Default is 14 units wide
 #config.frame_height = 8  # Default is 8 units high
@@ -18,7 +19,10 @@ class hello(Scene):
             x = float(x)
 
         x = str(x)
+
         #replaces instances where number are concated with x to be <num>*x
+        if (fstr[0:2] == "-x"):
+            fstr = "-1*" + fstr[1:len(fstr)]
         i = 0
         while(i < len(fstr)):
             if (fstr[i] == "x"):
@@ -72,6 +76,27 @@ class hello(Scene):
         backgroundColor = BLACK
         functionColor = self.color
 
+        #boundScale = 4
+        xRound = int(math.ceil(abs(self.approach)))
+        yApproach = self.func(self.function, abs(self.approach), "+")
+        yRound = int(math.ceil(yApproach))
+        boundScale = 5*(max(xRound, yRound) // 5 + 1)
+        if ((self.approach < 0 and self.side == -1) or (self.approach > 0 and self.side == 1)):
+            boundScale += 5
+        '''
+        if (abs(self.approach) > boundScale) :
+            boundScale = self.approach + 2
+
+        approachBound = abs(self.func(self.function, self.approach, "+"))
+        if (approachBound > boundScale):
+            boundScale = approachBound + 2
+        '''    
+        
+        leftBound = -2
+        rightBound = 18
+        bottomBound = -10
+        topBound = 10
+
         #approach = 0 #value x approaches
         #side = -1 #-1 to approach from left, 1 to approach from right
 
@@ -84,9 +109,11 @@ class hello(Scene):
 
         #initializes the x and y axes along with the range of values they display
         ax = Axes(
-            x_range=[-5, 5], y_range=[-5, 5], axis_config={"include_tip": False},
+            x_range=[-1*boundScale, boundScale], y_range=[-1*boundScale, boundScale], axis_config={"include_tip": True},
             x_length = 7,
-            y_length = 7
+            y_length = 7,
+            x_axis_config={"numbers_to_include": range(-1*boundScale+1, boundScale, 2)},  # Auto number x-axis
+            y_axis_config={"numbers_to_include": range(-1*boundScale+1, boundScale, 2)},  # Auto number y-axis
         )
         labels = ax.get_axis_labels(x_label="x", y_label="f(x)").scale(scale) # Labels each axis
 
@@ -100,7 +127,7 @@ class hello(Scene):
         #In manim, a value tracker is an object that displays a constantly updated value
         #By default it starts at some initial value and increases or decreases at a constant rate
         #until it reaches it's defined ending value
-        xTracker = ValueTracker(4*self.side)
+        xTracker = ValueTracker(4*(boundScale/5)*self.side)
 
         #Every frame the x and y value of the point gets updated by getting the current value of xTracker. The exact value gets directly displayed
         #for x and for y the value from the value tracker is plugged into the method func() and the output is what the y value gets set equal to
@@ -119,7 +146,7 @@ class hello(Scene):
         #Draws text on screen using Latex
         xText = MathTex(r"x = ").to_edge(UL).shift([-0.3, 0.2, 0])
         functionText = MathTex(r"f(x) = ").to_edge(UL).shift([-0.3, -0.7, 0])
-        limitText = MathTex(r"\lim \limits_{x \to 0^-} f(x) = " + str(self.func(self.function, self.approach, "+"))).to_edge(UL).shift([0, -2.75, 0])
+        limitText = MathTex(r"\lim \limits_{x \to 0^-} f(x) = " + str(round(self.func(self.function, self.approach, "+"), 10))).to_edge(UL).shift([0, -2.75, 0])
         
         #Add all defined elements to the scene
         self.add(ax, labels, graph, dot, coordsRect, x_value, xText, y_value, functionText)
