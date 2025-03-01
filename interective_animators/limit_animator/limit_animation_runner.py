@@ -109,11 +109,11 @@ class hello(Scene):
 
         #initializes the x and y axes along with the range of values they display
         ax = Axes(
-            x_range=[-1*boundScale, boundScale], y_range=[-1*boundScale, boundScale], axis_config={"include_tip": True},
+            x_range=[-1*boundScale, boundScale, int(boundScale/5)], y_range=[-1*boundScale, boundScale, int(boundScale/5)], axis_config={"include_tip": True},
             x_length = 7,
             y_length = 7,
-            x_axis_config={"numbers_to_include": range(-1*boundScale+1, boundScale, 2)},  # Auto number x-axis
-            y_axis_config={"numbers_to_include": range(-1*boundScale+1, boundScale, 2)},  # Auto number y-axis
+            x_axis_config={"numbers_to_include": range(-1*boundScale, boundScale, int(boundScale/5))},  # Auto number x-axis
+            y_axis_config={"numbers_to_include": range(-1*boundScale, boundScale, int(boundScale/5))},  # Auto number y-axis
         )
         labels = ax.get_axis_labels(x_label="x", y_label="f(x)").scale(scale) # Labels each axis
 
