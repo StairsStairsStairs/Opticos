@@ -37,22 +37,20 @@ class hello(Scene):
             )
         return rect
 
-    def createEntireSetOfBoxes(self, ax, numBoxesNow, oldBoxes=None):
-        # if oldBoxes != None:
-        #     for box in oldBoxes:
-        #         self.remove(box)
+    def createEntireSetOfBoxes(self, ax, numBoxesNow, oldBoxes=None, aproxWithLower=True):
         numBoxesOld = len(oldBoxes) if oldBoxes != None else numBoxesNow
         EveryXAmtTransform = numBoxesNow/numBoxesOld
 
         xVals = self.createIntegralBoxXValues(numBoxesNow)
         allRects = []
         for i in range(numBoxesNow):
-            rect = self.createIntegralBox(xVals[i], xVals[i+1], ax)
-            allRects.append(rect)
+            rect = self.createIntegralBox(xVals[i], xVals[i+1], ax, aproxWithLower)
             if oldBoxes != None and i < numBoxesOld:
-                self.play(Transform(oldBoxes[int(i)], rect), run_time=0.1)
+                self.play(Transform(oldBoxes[int(i)], rect), run_time=0.05)
+                allRects.append(oldBoxes[int(i)])
             else:
-                self.play(Create(rect), run_time=0.1)
+                self.play(Create(rect), run_time=0.05)
+                allRects.append(rect)
         return allRects
 
     def construct(self):
@@ -87,9 +85,11 @@ class hello(Scene):
         self.play(Create(ax))
         self.play(Create(parabola))
 
+        numBoxes = 20
         allBoxes = self.createEntireSetOfBoxes(ax, 10)
-        self.createEntireSetOfBoxes(ax, 20, allBoxes)
-
+        for i in range(10):
+            numBoxes += 2
+            allBoxes = self.createEntireSetOfBoxes(ax, numBoxes, allBoxes)
 
         # self.play(Create(rect))
         self.wait(1)
