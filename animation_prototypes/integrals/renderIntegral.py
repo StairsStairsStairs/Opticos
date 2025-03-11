@@ -37,21 +37,30 @@ class hello(Scene):
             )
         return rect
 
-    def createEntireSetOfBoxes(self, ax, numBoxesNow, oldBoxes=None, aproxWithLower=True):
-        numBoxesOld = len(oldBoxes) if oldBoxes != None else numBoxesNow
-        EveryXAmtTransform = numBoxesNow/numBoxesOld
-
+    def getSetOfNewBoxes(self, ax, numBoxesNow, aproxWithLower=True):
         xVals = self.createIntegralBoxXValues(numBoxesNow)
         allRects = []
         for i in range(numBoxesNow):
             rect = self.createIntegralBox(xVals[i], xVals[i+1], ax, aproxWithLower)
-            if oldBoxes != None and i < numBoxesOld:
-                self.play(Transform(oldBoxes[int(i)], rect), run_time=0.05)
-                allRects.append(oldBoxes[int(i)])
-            else:
-                self.play(Create(rect), run_time=0.05)
-                allRects.append(rect)
+            allRects.append(rect)
         return allRects
+
+    def animateAllBoxes(self, ax, allOldBoxes, allNewBoxes):
+        if (len(allOldBoxes) != 0 and len(allNewBoxes) != 0):
+            indexToStartCreating = min(len(allOldBoxes), len(allNewBoxes))
+            while len(allOldBoxes) < len(allNewBoxes):
+                newBox = self.createIntegralBox(userInfo.integral_xRange[1],userInfo.integral_xRange[1],ax)
+                allOldBoxes.append(newBox)
+                self.add(newBox)
+            self.play(*[Transform(oldBox, newBox) for oldBox, newBox in zip(allOldBoxes, allNewBoxes)], run_time=0.50)
+            return allOldBoxes
+        if (len(allOldBoxes) != 0):
+            self.play(*[Uncreate(box) for box in allOldBoxes], run_time=0.50)
+            return []
+        if (len(allNewBoxes) != 0):
+            self.play(*[Create(box) for box in allNewBoxes], run_time=0.50)
+            return allNewBoxes
+        return None
 
     def construct(self):
         func = userInfo.continuous_function
@@ -85,11 +94,13 @@ class hello(Scene):
         self.play(Create(ax))
         self.play(Create(parabola))
 
-        numBoxes = 20
-        allBoxes = self.createEntireSetOfBoxes(ax, 10)
-        for i in range(10):
-            numBoxes += 2
-            allBoxes = self.createEntireSetOfBoxes(ax, numBoxes, allBoxes)
+        numBoxes = 5
+        currentBoxes = []
+        for i in range(5):
+            numBoxes *= 2
+            newBoxesToAdd = self.getSetOfNewBoxes(ax, numBoxes)
+            currentBoxes = self.animateAllBoxes(ax, currentBoxes, newBoxesToAdd)
+            self.wait(1)
 
         # self.play(Create(rect))
         self.wait(1)
