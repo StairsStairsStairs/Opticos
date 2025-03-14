@@ -2,8 +2,18 @@ from tkinter import *
 import cv2
 
 
-class Opticos(object):
+class GUI(object):
     def __init__(self, master):
+        # Layout constants
+        master.title("Opticos")
+        buttonWidth = 30
+        buttonPadx = 2
+        buttonPady = 10
+        objectPackPady = 10
+        screenResolution = (900, 600)
+        frameColor = "Gray"
+
+
         # Create and configure new button object
         def newButton(parent, cmd, buttontext):
             button = Button(parent, command=cmd, text = buttontext)
@@ -12,32 +22,25 @@ class Opticos(object):
 
         # Create a new information frame for a topic
         def newPage(text, canInputFunction=False):
-            frame = Frame(master, bg="Blue", relief=RAISED)
-            textLabel = Label(frame, text=text, pady=2, 
-                        wraplength=int(.7*screenResolution[0]))
-            textLabel.pack(pady=10, side=TOP)
+            frame = Frame(master, bg=frameColor, relief=RAISED)
+            textLabel = Label(frame, text=text, pady=2, wraplength=int(.7*screenResolution[0]))
+            textLabel.pack(pady=objectPackPady, side=TOP)
 
             if canInputFunction:
-                entryFrame = Frame(frame, bg="Blue", relief=RAISED, width=200, height=50)
+                entryFrame = Frame(frame, bg=frameColor, relief=RAISED, width=200, height=50)
                 entryFrame.pack(side=TOP, pady=(50, 0))
-                entryLabel = Label(entryFrame, text="Function: ", pady=2, bg="Blue")
+                entryLabel = Label(entryFrame, text="Function: ", pady=2, bg=frameColor)
                 entryLabel.pack(padx=10, side=LEFT)
                 functionBox = Entry(entryFrame)
                 functionBox.pack(padx=5, side=RIGHT)
 
             videoButton = newButton(frame, self.playVideo, "Play")
-            videoButton.pack(pady=10, side=TOP)
+            videoButton.pack(pady=objectPackPady, side=TOP)
 
             backButton = newButton(frame, lambda: self.switchFrame((self.currentFrameID[0], 0)), 'Back')
-            backButton.pack(pady=10, side=BOTTOM)
+            backButton.pack(pady=objectPackPady, side=BOTTOM)
             return frame
 
-
-        # Layout constants
-        buttonWidth = 30
-        buttonPadx = 2
-        buttonPady = 10
-        screenResolution = (900, 600)
 
         # Member variables
         self.parent = master
@@ -46,12 +49,12 @@ class Opticos(object):
         self.chapterText = dict()
         self.frames = dict()
         self.currentFrameID = (0, 0)
-        self.mainFrame = Frame(master, bg="Gray", relief=GROOVE)
+        self.mainFrame = Frame(master, bg=frameColor, relief=GROOVE)
 
 
         # Main frame
         quitButton = newButton(self.mainFrame, self.terminate, 'Quit')
-        quitButton.pack(pady=10, side=BOTTOM)
+        quitButton.pack(pady=objectPackPady, side=BOTTOM)
 
         self.frames[(0, 0)] = self.mainFrame
         subjects = open("gui/exampleText.txt").read().split('-----\n')
@@ -59,14 +62,14 @@ class Opticos(object):
         # Read from text file, creating frames with buttons for each topic.
         for i in range(len(subjects)):
             subject = subjects[i]
-            frame = Frame(master, bg="Gray", relief=GROOVE)
+            frame = Frame(master, bg=frameColor, relief=GROOVE)
             self.frames[(i+1, 0)] = frame
 
             subjectTitle = subject[:subject.index('\n')].strip()
             subjectButton = newButton(self.mainFrame, lambda n=i+1: self.switchFrame((n, 0)), subjectTitle)
-            subjectButton.pack(pady=10, side=TOP)
+            subjectButton.pack(pady=objectPackPady, side=TOP)
             backButton = newButton(frame, lambda: self.switchFrame((0, 0)), "Back")
-            backButton.pack(pady=10, side=BOTTOM)
+            backButton.pack(pady=objectPackPady, side=BOTTOM)
 
             topics = subject.split('\n\n')[1:]
             for j in range(len(topics)):
@@ -77,7 +80,7 @@ class Opticos(object):
                 self.chapterText[(i+1, j+1)] = text
                 
                 topicButton = newButton(frame, lambda n=i+1, m=j+1: self.switchFrame((n, m)), topicTitle)
-                topicButton.pack(pady=10, side=TOP)
+                topicButton.pack(pady=objectPackPady, side=TOP)
 
         self.mainFrame.pack(expand=True, fill=BOTH)
 
@@ -97,6 +100,21 @@ class Opticos(object):
 
     # Currently only plays one video, will either use a dict or generate the video through manim on demand   
     def playVideo(self):
+        # Get the function in the entry if one exists (currently only prints, will be used to generate anim)
+        slaves = self.frames[self.currentFrameID].pack_slaves()
+        userFunction = None
+        for slave in slaves:
+            if type(slave) == Frame:
+                slaves = slave.pack_slaves()
+                for slave in slaves:
+                    if type(slave) == Entry:
+                        print("hit")
+                        userFunction = slave.get()
+                        break
+                break
+        if userFunction != None and userFunction != '':
+            print(userFunction)
+
         cap = cv2.VideoCapture('gui/stockmp4.mp4')
         if (cap.isOpened()== False):
             print("Error opening video file")
@@ -126,6 +144,5 @@ class Opticos(object):
 
 if __name__ == '__main__':
     root = Tk()
-    root.title("Opticos")
-    app = Opticos(root)
+    app = GUI(root)
     root.mainloop()
