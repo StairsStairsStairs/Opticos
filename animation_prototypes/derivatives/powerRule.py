@@ -40,6 +40,12 @@ class Graphing(Scene):
             y = x**2
             mob.move_to(axes.c2p(x*5,y*5))
 
+        def calculate_slope(dot, end_dot):
+            return (dot.get_center()[1] - end_dot.get_center()[1])/(dot.get_center()[0] - end_dot.get_center()[0])
+
+        def update_label(mob):
+            mob.become(MathTex("slope = "+(str(calculate_slope(dot, end_dot)))))
+
         # Create a dot and set its starting position
         dot = Dot(color=WHITE).move_to(axes.c2p(2, 4))
         offscreen_dot = Dot(color = GREEN).move_to(axes.c2p(4, 10))
@@ -51,13 +57,18 @@ class Graphing(Scene):
 
         #end dot: (1,1)
         #dot: 
-        line = always_redraw(lambda: Line(end_offscreen_dot.get_center(), offscreen_dot.get_center(), color = YELLOW))
+        line = always_redraw(lambda: Line(end_dot.get_center(), dot.get_center(), color = YELLOW))
         
         #axes.c2p(dot.get_center()[0]+5*slope, dot.get_center()[1] + 5*slope)
         #end_dot.get_center()-(5*slope), dot.get_center()+(5*slope), color = YELLOW))
         #slope = (dot.get_center()[1] - 1)/(dot.get_center()[0] - 1))
 
+
+        label = MathTex("slope = "+(str(calculate_slope(dot, end_dot))))
+        label.add_updater(update_label)
+
         #Display graph
+        self.add(label)
         self.play(Create(axes), run_time = 2.5)
         self.play(Create(graph), run_time = 3)
         self.play(Create(graph_label), run_time = 0.5)
@@ -69,6 +80,7 @@ class Graphing(Scene):
         self.wait(0.5)
         self.play(UpdateFromAlphaFunc(dot, update_dot, run_time = 2, rate_func = linear),
             UpdateFromAlphaFunc(offscreen_dot, update_offscreen_dot, run_time = 2, rate_func = linear))
+        
         self.wait(1)
         self.remove(dot)
         self.remove(end_dot)
