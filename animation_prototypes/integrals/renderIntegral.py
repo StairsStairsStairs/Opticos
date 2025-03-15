@@ -62,6 +62,15 @@ class hello(Scene):
             return allNewBoxes
         return None
 
+    def copyAllBoxes(self, boxes):
+        newBoxes = []
+        for box in boxes:
+            newBoxes.append(box.copy())
+            # turn boxes blue
+            newBoxes[-1].set_fill(BLUE, opacity=1)
+            newBoxes[-1].set_z_index(-1)
+        return newBoxes
+
     def construct(self):
         func = userInfo.continuous_function
         self.camera.background_color = ORANGE
@@ -96,11 +105,17 @@ class hello(Scene):
 
         numBoxes = 5
         currentBoxes = []
-        for i in range(5):
+        for i in range(2):
             numBoxes *= 2
             newBoxesToAdd = self.getSetOfNewBoxes(ax, numBoxes)
             currentBoxes = self.animateAllBoxes(ax, currentBoxes, newBoxesToAdd)
             self.wait(1)
+            CopiedToShowArea = self.copyAllBoxes(currentBoxes)
+            self.add(*[box for box in CopiedToShowArea])
+            finalBox = Square(side_length=1, color=BLUE)
+            finalBox.move_to(RIGHT * 5 + UP * 0)
+            self.play(*[Transform(box, finalBox) for box in CopiedToShowArea], run_time=0.50)
+            self.remove(*[box for box in CopiedToShowArea])
 
         # self.play(Create(rect))
         self.wait(1)
