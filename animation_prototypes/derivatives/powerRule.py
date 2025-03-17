@@ -3,6 +3,7 @@
 
 from manim import *
 import math
+import sys
 
 class Graphing(Scene):
     
@@ -26,7 +27,7 @@ class Graphing(Scene):
         graph_label_2.next_to(label_position, UP)
         
         def update_dot(mob, alpha):
-            x = interpolate(2, 1, alpha)
+            x = interpolate(2, 1.00001, alpha)
             y = x**2
             mob.move_to(axes.c2p(x,y))
 
@@ -40,11 +41,16 @@ class Graphing(Scene):
             y = x**2
             mob.move_to(axes.c2p(x*5,y*5))
 
-        def calculate_slope(dot, end_dot):
-            return (dot.get_center()[1] - end_dot.get_center()[1])/(dot.get_center()[0] - end_dot.get_center()[0])
+        def calculate_slope(dot, end_dot, axis):
+            x1, y1 = axes.point_to_coords(end_dot.get_center())[:2] #extract the first two elements
+            x2, y2 = axes.point_to_coords(dot.get_center())[:2] #extract the first two elements
+            
+            slope = (y2 - y1)/(x2 - x1)
+            return round(slope, 3)
+            #return (dot.get_center()[1] - end_dot.get_center()[1])/(dot.get_center()[0] - end_dot.get_center()[0])
 
         def update_label(mob):
-            mob.become(MathTex("slope = "+(str(calculate_slope(dot, end_dot)))))
+            mob.become(MathTex("slope = "+(str(calculate_slope(dot, end_dot, axes))))).to_corner(UP+RIGHT)
 
         # Create a dot and set its starting position
         dot = Dot(color=WHITE).move_to(axes.c2p(2, 4))
@@ -64,8 +70,9 @@ class Graphing(Scene):
         #slope = (dot.get_center()[1] - 1)/(dot.get_center()[0] - 1))
 
 
-        label = MathTex("slope = "+(str(calculate_slope(dot, end_dot))))
+        label = MathTex("slope = "+(str(calculate_slope(dot, end_dot, axes))))
         label.add_updater(update_label)
+        label.to_corner(UP + RIGHT)
 
         #Display graph
         self.add(label)
