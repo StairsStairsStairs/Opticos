@@ -20,7 +20,9 @@ class hello(Scene):
 
         #initializes the x and y axes along with the range of values they display
         ax = Axes(
-            x_range=[-5, 5], y_range=[-15, 5], axis_config={"include_tip": False},
+            x_range=[-5, 5], y_range=[-5, 5], axis_config={"include_tip": False},
+            x_length = 7,
+            y_length = 7
         )
         labels = ax.get_axis_labels(x_label="x", y_label="f(x)") # Labels each axis
 
@@ -48,7 +50,7 @@ class hello(Scene):
         #Draws text on screen using Latex
         xText = MathTex(r"x = ").to_edge(UR).shift([-2, 0, 0])
         functionText = MathTex(r"f(x) = ").to_edge(UR).shift([-2.5, -1, 0])
-        limitText = MathTex(r"\lim \limits_{x \to 0^+} f(x) = 2").to_edge(UR).shift([0, -2.75, 0])
+        limitText = MathTex(r"\lim \limits_{x \to 0^+} f(x) = 2").to_edge(UR).shift([0, -2, 0])
         
         #Add all defined elements to the scene
         self.add(ax, labels, graph, dot, x_value, xText, y_value, functionText)

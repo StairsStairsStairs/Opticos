@@ -5,7 +5,9 @@ class hello(Scene):
             return -1 * x**2 + 2
     
         ax = Axes(
-            x_range=[-5, 5], y_range=[-15, 5], axis_config={"include_tip": False},
+            x_range=[-5, 5], y_range=[-5, 5], axis_config={"include_tip": False},
+            x_length = 7,
+            y_length = 7
         )
         labels = ax.get_axis_labels(x_label="x", y_label="f(x)")
 
@@ -23,7 +25,7 @@ class hello(Scene):
 
         xTextLeft = MathTex(r"x = ").to_edge(UL)
         functionTextLeft = MathTex(r"f(x) = ").to_edge(UL).shift([0, -1, 0])
-        limitTextLeft = MathTex(r"\lim \limits_{x \to 0^-} f(x) = 2").to_edge(UL).shift([0, -2.75, 0])
+        limitTextLeft = MathTex(r"\lim \limits_{x \to 0^-} f(x) = 2").to_edge(UL).shift([0, -2, 0])
 
         self.add(ax, labels, graph, dot_left, x_value_left, xTextLeft, y_value_left, functionTextLeft)
         
@@ -53,7 +55,7 @@ class hello(Scene):
 
         xTextRight = MathTex(r"x = ").to_edge(UR).shift([-2, 0, 0])
         functionTextRight = MathTex(r"f(x) = ").to_edge(UR).shift([-2.5, -1, 0])
-        limitTextRight = MathTex(r"\lim \limits_{x \to 0^+} f(x) = 2").to_edge(UR).shift([0, -2.75, 0])
+        limitTextRight = MathTex(r"\lim \limits_{x \to 0^+} f(x) = 2").to_edge(UR).shift([0, -2, 0])
 
         self.add(dot_right, x_value_right, xTextRight, y_value_right, functionTextRight)
         

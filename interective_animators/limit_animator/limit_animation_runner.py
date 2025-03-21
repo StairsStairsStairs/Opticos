@@ -75,6 +75,7 @@ class hello(Scene):
         scale = 1
         backgroundColor = BLACK
         functionColor = self.color
+        value_panel = Rectangle(width=6, height=config.frame_height, color="#0a0a4a", fill_color = "#0a0a4a", fill_opacity = 1).to_edge(LEFT).shift([-0.5, 0, 0])
 
         #boundScale = 4
         xRound = int(math.ceil(abs(self.approach)))
@@ -115,7 +116,9 @@ class hello(Scene):
             x_axis_config={"numbers_to_include": range(-1*boundScale, boundScale, int(boundScale/5))},  # Auto number x-axis
             y_axis_config={"numbers_to_include": range(-1*boundScale, boundScale, int(boundScale/5))},  # Auto number y-axis
         )
-        labels = ax.get_axis_labels(x_label="x", y_label="f(x)").scale(scale) # Labels each axis
+        #labels = ax.get_axis_labels(x_label="x", y_label="f(x)").scale(scale) # Labels each axis
+        x_label = MathTex("x").to_edge(RIGHT).shift([0, 0.5, 0])
+        y_label = MathTex("f(x)").to_edge(UP).shift([4, 0, 0])
 
         #Draw graph that plot out function defined by func()
         graph = ax.plot(lambda x: self.func(self.function, x, "+"), color = functionColor, discontinuities=[1])
@@ -149,7 +152,7 @@ class hello(Scene):
         limitText = MathTex(r"\lim \limits_{x \to 0^-} f(x) = " + str(round(self.func(self.function, self.approach, "+"), 10))).to_edge(UL).shift([0, -2.75, 0])
         
         #Add all defined elements to the scene
-        self.add(ax, labels, graph, dot, coordsRect, x_value, xText, y_value, functionText)
+        self.add(value_panel, ax, x_label, y_label, graph, dot, coordsRect, x_value, xText, y_value, functionText)
         
         #Run value tracker, starts from -4 and and at -0.05
         self.play(xTracker.animate.set_value(self.approach + 0.05*self.side), run_time = 3)
