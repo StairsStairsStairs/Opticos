@@ -1,5 +1,6 @@
 from tkinter import *
 import cv2
+from pathlib import Path
 
 
 class GUI(object):
@@ -45,6 +46,7 @@ class GUI(object):
         # Member variables
         self.parent = master
         self.parent.geometry(str(screenResolution[0]) + 'x' + str(screenResolution[1]))
+        self.directory = Path(__file__).parent
 
         self.chapterText = dict()
         self.frames = dict()
@@ -57,7 +59,7 @@ class GUI(object):
         quitButton.pack(pady=objectPackPady, side=BOTTOM)
 
         self.frames[(0, 0)] = self.mainFrame
-        subjects = open("gui/exampleText.txt").read().split('-----\n')
+        subjects = open(self.directory/"exampleText.txt").read().split('-----\n')
 
         # Read from text file, creating frames with buttons for each topic.
         for i in range(len(subjects)):
@@ -87,6 +89,7 @@ class GUI(object):
 
 
 
+
     # switchFrame takes the frame ID of the frame that is going to be loaded
     # Frame IDs work as follows:
     #     (0, 0) is the main frame
@@ -108,14 +111,13 @@ class GUI(object):
                 slaves = slave.pack_slaves()
                 for slave in slaves:
                     if type(slave) == Entry:
-                        print("hit")
                         userFunction = slave.get()
                         break
                 break
         if userFunction != None and userFunction != '':
-            print(userFunction)
+            print("Function: " + userFunction)
 
-        cap = cv2.VideoCapture('gui/stockmp4.mp4')
+        cap = cv2.VideoCapture(str(self.directory/"stockmp4.mp4"))
         if (cap.isOpened()== False):
             print("Error opening video file")
             return
