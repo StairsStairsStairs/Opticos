@@ -1,5 +1,8 @@
+import sys
+import math
 from manim import *
-
+del sys.modules["manim"]
+del sys.modules["math"]
 class DiscontinuousGraph(Scene):
     def construct(self):
         # Create axes
@@ -8,7 +11,7 @@ class DiscontinuousGraph(Scene):
             y_range=[-2, 4, 1], 
             axis_config={"include_numbers": True}
         )
-        
+        val = math.cos(2)
         # Define the function f(x) = (x^2 - 1) / (x - 1)
         def func(x):
             if x == 2:
