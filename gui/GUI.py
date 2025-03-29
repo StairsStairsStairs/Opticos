@@ -1,7 +1,6 @@
 from tkinter import *
-import cv2
 from pathlib import Path
-
+import cv2
 
 class GUI(object):
     def __init__(self, master):
@@ -13,7 +12,6 @@ class GUI(object):
         objectPackPady = 10
         screenResolution = (900, 600)
         frameColor = "Gray"
-
 
         # Create and configure new button object
         def newButton(parent, cmd, buttontext):
@@ -35,7 +33,7 @@ class GUI(object):
                 functionBox = Entry(entryFrame)
                 functionBox.pack(padx=5, side=RIGHT)
 
-            videoButton = newButton(frame, self.playVideo, "Play")
+            videoButton = newButton(frame, lambda: self.playVideo(str(self.directory/'stockmp4.mp4')), "Play")
             videoButton.pack(pady=objectPackPady, side=TOP)
 
             backButton = newButton(frame, lambda: self.switchFrame((self.currentFrameID[0], 0)), 'Back')
@@ -57,6 +55,9 @@ class GUI(object):
         # Main frame
         quitButton = newButton(self.mainFrame, self.terminate, 'Quit')
         quitButton.pack(pady=objectPackPady, side=BOTTOM)
+
+        testManimButton = newButton(self.mainFrame, self.playManim, 'Manim')
+        testManimButton.pack(pady=objectPackPady, side=BOTTOM)
 
         self.frames[(0, 0)] = self.mainFrame
         subjects = open(self.directory/"exampleText.txt").read().split('-----\n')
@@ -102,7 +103,7 @@ class GUI(object):
         self.currentFrameID = nextID
 
     # Currently only plays one video, will either use a dict or generate the video through manim on demand   
-    def playVideo(self):
+    def playVideo(self, videoFile):
         # Get the function in the entry if one exists (currently only prints, will be used to generate anim)
         slaves = self.frames[self.currentFrameID].pack_slaves()
         userFunction = None
@@ -117,13 +118,14 @@ class GUI(object):
         if userFunction != None and userFunction != '':
             print("Function: " + userFunction)
 
-        cap = cv2.VideoCapture(str(self.directory/"stockmp4.mp4"))
+        # Play the video
+        cap = cv2.VideoCapture(videoFile)
         if (cap.isOpened()== False):
             print("Error opening video file")
             return
 
         cv2.namedWindow('Animation')
-        cv2.moveWindow('Animation', 40, 30)
+        cv2.moveWindow('Animation', 1, 1)
         # Read video frame by frame
         while(cap.isOpened()):
             ret, frame = cap.read()
@@ -138,6 +140,12 @@ class GUI(object):
 
         cap.release()
         cv2.destroyAllWindows()
+
+
+
+    # Test function to play a manimation through the GUI
+    def playManim(self):
+        self.playVideo(self.directory/'../media/videos/1080p60/hello.mp4')
 
     # Quit the program
     def terminate(self):
