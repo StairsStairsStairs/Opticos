@@ -109,26 +109,18 @@ class hello(Scene):
         Area_text = MathTex(r"\text{Area}").scale(1.5).move_to(Area_box.get_center())
         Area_text.shift(UP * 1)
         Area_text.set_z_index(2)
-
-        # Area_number = DecimalNumber(self.var_sum, num_decimal_places=4)
-        # Area_MathTex = MathTex("0")
-        # Area_MathTex[0].become(Area_number)
-        # Area_MathTex.move_to(Area_box.get_center()).shift(DOWN * 0.25)
-        # Area_MathTex.set_z_index(2)
-        equation = MathTex("x =")
-        number = DecimalNumber(0, num_decimal_places=0)
-        number.next_to(equation, RIGHT)
-        equation_group = VGroup(equation, number)
-        equation_group.move_to(Area_box.get_center()).shift(DOWN * 0.25)
-        equation_group.set_z_index(2)
+        #   Add area amount to box
+        number = DecimalNumber(0, num_decimal_places=2)
+        number.move_to(Area_box.get_center()).shift(DOWN * 0.25)
+        number.set_z_index(2)
         
         # Animate
         self.play(Create(ax), Create(Area_box))
-        self.play(Create(parabola), Create(Area_text), Create(equation_group))
+        self.play(Create(parabola), Create(Area_text), Create(number))
 
         numBoxes = 5
         currentBoxes = []
-        for i in range(2):
+        for i in range(4):
             numBoxes *= 2
             newBoxesToAdd = self.getSetOfNewBoxes(ax, numBoxes)
             currentBoxes = self.animateAllBoxes(ax, currentBoxes, newBoxesToAdd)
@@ -137,10 +129,27 @@ class hello(Scene):
             CopiedToShowArea = self.copyAllBoxes(currentBoxes)
             self.add(*[box for box in CopiedToShowArea])
             self.play(*[box.animate.set_opacity(1) for box in CopiedToShowArea], run_time=0.3)
-            self.play(*[Transform(box, Area_box) for box in CopiedToShowArea], run_time=0.50)
-            print(self.var_sum)
-            self.play(number.animate.set_value(self.var_sum), run_time=0.50)
+            self.play(*[Transform(box, Area_box) for box in CopiedToShowArea],
+                    number.animate.set_value(self.var_sum).move_to(Area_box.get_center()).shift(DOWN * 0.25), run_time=0.50)
             number.set_z_index(2)
+            print(self.var_sum)
+            # !!!! insure number doesn't go outside of box !!!!!
+            # self.play(number.animate.set_value(self.var_sum).move_to(Area_box.get_center()).shift(DOWN * 0.25), run_time=0.50)
             self.remove(*[box for box in CopiedToShowArea])
+        
+        # Make whole polygon
+        numBoxes *= 2
+        xVals = self.createIntegralBoxXValues(int(numBoxes/4))
+        points = [ ax.c2p(xVals[i],userInfo.continuous_function(xVals[i])) for i in range(len(xVals)) ]
+        points.append(ax.c2p(xVals[-1],0))
+        points.append(ax.c2p(xVals[0],0))
+        # points.append(ax.c2p(xVals[0],userInfo.continuous_function(xVals[0])))
+        # points = [ax.c2p(0,0), ax.c2p(1,0), ax.c2p(1,1), ax.c2p(0,1)]
+        shape = Polygon(*points, color=GREEN)
+        shape.set_fill(color=GREEN, opacity=1)
+        shape.set_stroke(color=GREEN, width=2)
+        shape.set_z_index(5)
+        self.play(FadeIn(shape), *[FadeOut(box) for box in currentBoxes], run_time=0.50)
+        # self.remove(*[box for box in currentBoxes])
 
         self.wait(1)
