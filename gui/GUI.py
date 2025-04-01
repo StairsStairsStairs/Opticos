@@ -5,40 +5,51 @@ import cv2
 class GUI(object):
     def __init__(self, master):
         # Layout constants
+        screenResolution = (1600, 900)
         master.title("Opticos")
-        buttonWidth = 30
-        buttonPadx = 2
-        buttonPady = 10
-        objectPackPady = 10
-        screenResolution = (900, 600)
+        buttonWidth = screenResolution[0] // 30
+        buttonPadx = buttonWidth // 15
+        buttonPady = screenResolution[0] // 100
+        objectPackPady = buttonPady
         frameColor = "Gray"
+        buttonFont = ('TkDefaultFont', 15)
+        pageFont = ('TkDefaultFont', 12)
+        root.resizable(False, False)
 
         # Create and configure new button object
         def newButton(parent, cmd, buttontext):
-            button = Button(parent, command=cmd, text = buttontext)
-            button.configure(width=buttonWidth, padx=buttonPadx, pady=buttonPady )
+            button = Button(parent, command=cmd, text = buttontext, font=buttonFont)
+            button.configure(width=buttonWidth, padx=buttonPadx, pady=buttonPady)
             return button
 
         # Create a new information frame for a topic
         def newPage(text, canInputFunction=False):
-            frame = Frame(master, bg=frameColor, relief=RAISED)
-            textLabel = Label(frame, text=text, pady=2, wraplength=int(.7*screenResolution[0]))
-            textLabel.pack(pady=objectPackPady, side=TOP)
+            rootFrame = Frame(master, bg=frameColor, relief=RAISED)
+            textFrame = Frame(rootFrame, bg=frameColor, relief=RAISED, width=screenResolution[0]//1.4, height=screenResolution[1]//2)
+            textFrame.pack(pady=objectPackPady, side=TOP)
+            pageText = Text(textFrame, font=pageFont, width=150, height=20)
+            pageText.insert(END, text)
+            pageText.configure(state=DISABLED)
+            scrollBar = Scrollbar(textFrame, orient='vertical')
+            scrollBar.config(command=pageText.yview)
+            scrollBar.pack(side=RIGHT, fill='y')
+            pageText['yscrollcommand'] = scrollBar.set
+            pageText.pack(side=LEFT)
 
             if canInputFunction:
-                entryFrame = Frame(frame, bg=frameColor, relief=RAISED, width=200, height=50)
+                entryFrame = Frame(rootFrame, bg=frameColor, relief=RAISED, width=200, height=50)
                 entryFrame.pack(side=TOP, pady=(50, 0))
                 entryLabel = Label(entryFrame, text="Function: ", pady=2, bg=frameColor)
                 entryLabel.pack(padx=10, side=LEFT)
                 functionBox = Entry(entryFrame)
                 functionBox.pack(padx=5, side=RIGHT)
 
-            videoButton = newButton(frame, lambda: self.playVideo(str(self.directory/'stockmp4.mp4')), "Play")
+            videoButton = newButton(rootFrame, lambda: self.playVideo(str(self.directory/'stockmp4.mp4')), "Play")
             videoButton.pack(pady=objectPackPady, side=TOP)
 
-            backButton = newButton(frame, lambda: self.switchFrame((self.currentFrameID[0], 0)), 'Back')
+            backButton = newButton(rootFrame, lambda: self.switchFrame((self.currentFrameID[0], 0)), 'Back')
             backButton.pack(pady=objectPackPady, side=BOTTOM)
-            return frame
+            return rootFrame
 
 
         # Member variables
@@ -83,7 +94,7 @@ class GUI(object):
                 self.chapterText[(i+1, j+1)] = text
                 
                 topicButton = newButton(frame, lambda n=i+1, m=j+1: self.switchFrame((n, m)), topicTitle)
-                topicButton.pack(pady=objectPackPady, side=TOP)
+                topicButton.pack(pady=objectPackPady, side=TOP) 
 
         self.mainFrame.pack(expand=True, fill=BOTH)
 
