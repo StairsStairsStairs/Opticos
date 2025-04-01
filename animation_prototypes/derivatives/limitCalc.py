@@ -10,7 +10,9 @@ class limitAnimation(Scene):
             axis_config={"include_numbers": True, "include_tip": False}
         )
 
-        func = axes.plot(lambda x: (x-1)*(x-2)*(x-3))
+        f = lambda x: (x-1)*(x-2)*(x-3)
+        func = axes.plot(f, color = BLUE)
+       
 
         x = ValueTracker(1)
         dx = ValueTracker(2)
@@ -40,7 +42,7 @@ class limitAnimation(Scene):
             lambda: Dot().move_to(
                 #axes.c2p(0,0)
                 #print(type(func(x.get_value())))
-                axes.c2p(x.get_value(), func.function(x.get_value())[0])
+                axes.c2p(x.get_value(), f(x.get_value()))
                 
                 
             )
@@ -49,7 +51,7 @@ class limitAnimation(Scene):
         dot2 = always_redraw(
             lambda: Dot().move_to(
                 #axes.c2p(0,0)
-                axes.c2p(x.get_value() + dx.get_value(), func.function(x.get_value() + dx.get_value())[0])
+                axes.c2p(x.get_value() + dx.get_value(), f(x.get_value() + dx.get_value()))
                 #axes.c2p(x.get_value() + dx.get_value()), func.function(x.get_value() + dx.get_value())
             )
         )
