@@ -5,12 +5,12 @@ import sys
 class limitAnimation(Scene):
     def construct(self):
         axes = Axes(
-            x_range = [-4, 4, 1],
-            y_range = [-5, 5, 1],
+            x_range = [0, 6, 1],
+            y_range = [0, 12, 2],
             axis_config={"include_numbers": True, "include_tip": False}
         )
 
-        f = lambda x: (x-1)*(x-2)*(x-3)
+        f = lambda x: x*x
         func = axes.plot(f, color = BLUE)
        
 
@@ -18,6 +18,17 @@ class limitAnimation(Scene):
         dx = ValueTracker(2)
 
         axes_labels = axes.get_axis_labels(x_label = "x", y_label = "y")
+
+        def update_label(mob):
+            mob.become(MathTex("slope = "+(str(calculate_slope(dot1, dot2, axes))))).to_corner(UP+RIGHT)
+
+        def calculate_slope(dot, end_dot, axis):
+            x1, y1 = axes.point_to_coords(end_dot.get_center())[:2] #extract the first two elements
+            x2, y2 = axes.point_to_coords(dot.get_center())[:2] #extract the first two elements
+            
+            slope = (y2 - y1)/(x2 - x1)
+            return round(slope, 3)
+            #return (dot.get_center()[1] - end_dot.get_center()[1])/(dot.get_center()[0] - end_dot.get_
 
         secant = always_redraw(
             lambda: axes.get_secant_slope_group(
@@ -29,7 +40,7 @@ class limitAnimation(Scene):
                 dx_label = "dx",
                 dy_label = "dy",
                 secant_line_color = WHITE,
-                secant_line_length = 5,
+                secant_line_length = 8,
             )
         )
 
@@ -56,11 +67,30 @@ class limitAnimation(Scene):
             )
         )
 
+
+        upperLine = always_redraw(
+            lambda: DashedLine(axes.c2p(0, f(x.get_value() + dx.get_value())), axes.c2p(x.get_value() + dx.get_value(), f(x.get_value() + dx.get_value())), dash_length=0.25, color = YELLOW)
+        )
+        upperLineLabel = MathTex("f(x+h)").next_to(upperLine, UP)
+        
+        def update_upperLabel(mob):
+            mob.become(MathTex("f(x+h)").next_to(upperLine, UP))
+
+
+
+
+        label = MathTex("slope = "+(str(calculate_slope(dot1, dot2, axes))))
+        label.add_updater(update_label)
+        label.to_corner(UP + RIGHT)
+        label.add_updater(update_upperLabel)
+        #self.add(label)
         print(type(x.get_value()), x.get_value())
         print(type(func.function(x.get_value())), func.function(x.get_value()))
         self.add(axes, axes_labels, func)
         self.play(Create(VGroup(dot1, dot2, secant)))
+        self.play(Create(upperLine), Write(upperLineLabel))
+        self.wait(1)
         self.play(dx.animate.set_value(0.0001), run_time = 2)
         self.wait()
         self.play(x.animate.set_value(1), run_time = 3)
-        self.wait(2)
+        
