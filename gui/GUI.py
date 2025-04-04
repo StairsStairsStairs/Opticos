@@ -1,6 +1,10 @@
 from tkinter import *
 from pathlib import Path
 import cv2
+import fitz
+from PIL import Image, ImageTk
+
+
 
 class GUI(object):
     def __init__(self, master):
@@ -46,21 +50,38 @@ class GUI(object):
             # Main frame of this page
             rootFrame = Frame(master, bg=frameColor, relief=RAISED)
 
-            # Create a sub-frame that holds the text box and scrollbar
+            # Create a sub-frame that holds the pdf and scrollbar
             textFrame = Frame(rootFrame, bg=frameColor, relief=RAISED, width=screenResolution[0]//1.4, height=screenResolution[1]//2)
-            textFrame.pack(pady=objectPackPady, side=TOP)
+            textFrame.pack(pady=objectPackPady, side=TOP, expand=False)
 
-            # Create and connect textbox and scrollbar
-            pageText = Text(textFrame, font=pageFont, width=150, height=20)
-            pageText.insert(END, text)
-            pageText.configure(state=DISABLED)
+            # Scrollable canvas to display pdf
+            pdfCanvas = Canvas(textFrame, width=screenResolution[0]//1.4, height=screenResolution[1]//2)
             scrollBar = Scrollbar(textFrame, orient='vertical')
-            scrollBar.config(command=pageText.yview)
-            pageText['yscrollcommand'] = scrollBar.set
-
-            # Pack the scrollbar and text into the text frame
+            scrollBar.config(command=pdfCanvas.yview)
             scrollBar.pack(side=RIGHT, fill='y')
-            pageText.pack(side=LEFT)
+
+            # Set the scrolling region properly
+            pdfCanvas.config(yscrollcommand=scrollBar.set, scrollregion=(0, 0, 10, 100))
+
+            # Open the PDF file
+            pdf_document = fitz.open(self.directory/'../opticos_textbook/calculus_1/intro_to_limits_as_a_concept/Opticos_Intro_to_Limits_as_a_Concept.pdf')
+            for i in range(pdf_document.page_count):
+                # Get the current page
+                page = pdf_document.load_page(i)
+                # Render the page to an image
+                pix = page.get_pixmap()
+                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                img_tk = ImageTk.PhotoImage(img)
+
+                # Create a label for each page image
+                label = Label(pdfCanvas, image=img_tk)
+                label.image = img_tk
+                label.pack(fill='both', expand=False)
+
+            pdfCanvas.config(width=screenResolution[0]//1.4, height=screenResolution[1]//2)
+            pdfCanvas.pack(fill='both', expand=False)
+            textFrame.config(width=screenResolution[0]//1.4, height=screenResolution[1]//2)
+
 
             # Create an entry box and corresponding sub-frame if needed
             if canInputFunction:
@@ -84,8 +105,6 @@ class GUI(object):
             backButton = newButton(rootFrame, lambda: self.switchFrame((self.currentFrameID[0], 0)), 'Back')
             backButton.pack(pady=objectPackPady, side=BOTTOM)
             return rootFrame
-
-
 
 
 
@@ -141,7 +160,6 @@ class GUI(object):
 
 
 
-
     # switchFrame takes the frame ID of the frame that is going to be loaded
     # Frame IDs work as follows:
     #     (0, 0) is the main frame
@@ -193,7 +211,6 @@ class GUI(object):
         cv2.destroyAllWindows()
 
 
-
     # Test function to play a manimation through the GUI
     def playManim(self):
         self.playVideo(self.directory/'../media/videos/1080p60/hello.mp4')
@@ -201,6 +218,8 @@ class GUI(object):
     # Quit the program
     def terminate(self):
         self.parent.destroy()
+
+
 
 
 if __name__ == '__main__':
