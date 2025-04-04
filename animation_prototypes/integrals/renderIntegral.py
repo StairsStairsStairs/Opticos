@@ -7,6 +7,9 @@ from scipy.optimize import minimize_scalar
 # manim ./animation_prototypes/integrals/renderIntegral.py
 
 class hello(Scene):
+    def clampYPos(self, value):
+        return max(self.min_y, min(value, self.max_y))
+
     def createIntegralBoxXValues(self, numValues):
         totalRange = userInfo.integral_xRange[1] - userInfo.integral_xRange[0]
         toReturn = [userInfo.integral_xRange[0]]
@@ -19,8 +22,8 @@ class hello(Scene):
             self.var_sum += userInfo.continuous_function(x_lower) * abs(x_upper - x_lower)
             rect = Polygon(
                 ax.c2p(x_lower,0),
-                ax.c2p(x_lower,userInfo.continuous_function(x_lower)),
-                ax.c2p(x_upper,userInfo.continuous_function(x_lower)),
+                ax.c2p(x_lower,self.clampYPos(userInfo.continuous_function(x_lower))),
+                ax.c2p(x_upper,self.clampYPos(userInfo.continuous_function(x_lower))),
                 ax.c2p(x_upper,0),
                 color=userInfo.integral_box_color_outline,
                 fill_color=userInfo.integral_box_color_fill,
@@ -30,8 +33,8 @@ class hello(Scene):
             self.var_sum += userInfo.continuous_function(x_upper) * (x_upper - x_lower)
             rect = Polygon(
                 ax.c2p(x_lower,0),
-                ax.c2p(x_lower,function(x_upper)),
-                ax.c2p(x_upper,function(x_upper)),
+                ax.c2p(x_lower,self.clampYPos(userInfo.continuous_function(x_upper))),
+                ax.c2p(x_upper,self.clampYPos(userInfo.continuous_function(x_upper))),
                 ax.c2p(x_upper,0),
                 color=userInfo.integral_box_color_outline,
                 fill_color=userInfo.integral_box_color_fill,
@@ -89,6 +92,8 @@ class hello(Scene):
 
         custom_y_range = [func(min_res.x)-1, func(max_res.x)+1, 0]
         custom_y_range[2] = math.ceil((custom_y_range[1] - custom_y_range[0]) / 10)
+        self.min_y = custom_y_range[0]*1.05
+        self.max_y = custom_y_range[1]*1.05
 
         # Create Axes and Graph
         ax = Axes(
@@ -120,36 +125,39 @@ class hello(Scene):
 
         numBoxes = 5
         currentBoxes = []
-        for i in range(4):
+        maxIterationsAmt = 4
+        for i in range(maxIterationsAmt):
             numBoxes *= 2
             newBoxesToAdd = self.getSetOfNewBoxes(ax, numBoxes)
             currentBoxes = self.animateAllBoxes(ax, currentBoxes, newBoxesToAdd)
             self.wait(1)
-
+            
             CopiedToShowArea = self.copyAllBoxes(currentBoxes)
             self.add(*[box for box in CopiedToShowArea])
             self.play(*[box.animate.set_opacity(1) for box in CopiedToShowArea], run_time=0.3)
             self.play(*[Transform(box, Area_box) for box in CopiedToShowArea],
-                    number.animate.set_value(self.var_sum).move_to(Area_box.get_center()).shift(DOWN * 0.25), run_time=0.50)
-            number.set_z_index(2)
-            print(self.var_sum)
-            # !!!! insure number doesn't go outside of box !!!!!
-            # self.play(number.animate.set_value(self.var_sum).move_to(Area_box.get_center()).shift(DOWN * 0.25), run_time=0.50)
+                    number.animate.set_value(self.var_sum).move_to(Area_box.get_center()).shift(DOWN * 0.25).set_z_index(2),
+                    run_time=0.50)
             self.remove(*[box for box in CopiedToShowArea])
         
         # Make whole polygon
-        numBoxes *= 2
-        xVals = self.createIntegralBoxXValues(int(numBoxes/4))
-        points = [ ax.c2p(xVals[i],userInfo.continuous_function(xVals[i])) for i in range(len(xVals)) ]
+        xVals = self.createIntegralBoxXValues(int(numBoxes))
+        points = [ ax.c2p(xVals[i],self.clampYPos(userInfo.continuous_function(xVals[i]))) for i in range(len(xVals)) ]
         points.append(ax.c2p(xVals[-1],0))
         points.append(ax.c2p(xVals[0],0))
-        # points.append(ax.c2p(xVals[0],userInfo.continuous_function(xVals[0])))
-        # points = [ax.c2p(0,0), ax.c2p(1,0), ax.c2p(1,1), ax.c2p(0,1)]
-        shape = Polygon(*points, color=GREEN)
-        shape.set_fill(color=GREEN, opacity=1)
-        shape.set_stroke(color=GREEN, width=2)
-        shape.set_z_index(5)
-        self.play(FadeIn(shape), *[FadeOut(box) for box in currentBoxes], run_time=0.50)
-        # self.remove(*[box for box in currentBoxes])
+        PerfectAreaUnderCurve = Polygon(*points, color=userInfo.integral_box_color_fill)\
+            .set_fill(color=userInfo.integral_box_color_fill, opacity=1)\
+            .set_stroke(color=userInfo.integral_box_color_outline, width=2)
+        self.play(FadeIn(PerfectAreaUnderCurve), *[FadeOut(box) for box in currentBoxes], run_time=0.50)
+
+        # Animate the area under the curve
+        self.wait(1)
+        PerfectAreaUnderCurveCopy = Polygon(*points, color=userInfo.sum_of_integral_boxes_fill)\
+            .set_fill(color=userInfo.sum_of_integral_boxes_fill, opacity=1)\
+            .set_stroke(color=userInfo.sum_of_integral_boxes_outline, width=2)
+        self.play(FadeIn(PerfectAreaUnderCurveCopy), run_time=0.3)
+        self.play(Transform(PerfectAreaUnderCurveCopy, Area_box),
+                    number.animate.set_value(2).move_to(Area_box.get_center()).shift(DOWN * 0.25).set_z_index(2),
+                    run_time=0.50)
 
         self.wait(1)

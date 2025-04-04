@@ -12,4 +12,4 @@ box_of_area_under_curve_fill = rgb_to_color((0.0, 0.0, 1.0))
 
 function_color = rgb_to_color((0.2, 0.6, 0.8))
 def continuous_function(x):
-    return x**2
+    return x**5-x
