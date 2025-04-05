@@ -2,6 +2,7 @@ import math
 from manim import *
 import userInput_Integral as userInfo
 from scipy.optimize import minimize_scalar
+from scipy.integrate import quad
 # wsl
 # source manim-env/bin/activate
 # manim ./animation_prototypes/integrals/renderIntegral.py
@@ -80,7 +81,7 @@ class hello(Scene):
 
     def construct(self):
         self.var_sum = 0
-        self.camera.background_color = ORANGE
+        self.camera.background_color = userInfo.background_color
         func = userInfo.continuous_function
 
         # Get Axis Ranges
@@ -92,8 +93,8 @@ class hello(Scene):
 
         custom_y_range = [func(min_res.x)-1, func(max_res.x)+1, 0]
         custom_y_range[2] = math.ceil((custom_y_range[1] - custom_y_range[0]) / 10)
-        self.min_y = custom_y_range[0]*1.05
-        self.max_y = custom_y_range[1]*1.05
+        self.min_y = custom_y_range[0]*1.1
+        self.max_y = custom_y_range[1]*1.1
 
         # Create Axes and Graph
         ax = Axes(
@@ -107,7 +108,7 @@ class hello(Scene):
         parabola.set_z_index(2)
 
         # Show Box of Area sum
-        Area_box = Square(side_length=3, color=userInfo.box_of_area_under_curve_outline, fill_color=userInfo.box_of_area_under_curve_fill, fill_opacity=1.0)
+        Area_box = Square(side_length=3, color=userInfo.sum_of_integral_boxes_outline, fill_color=userInfo.sum_of_integral_boxes_fill, fill_opacity=1.0)
         Area_box.move_to(RIGHT * 5.25)
         Area_box.set_z_index(2)
         #   Add text to box
@@ -125,7 +126,8 @@ class hello(Scene):
 
         numBoxes = 5
         currentBoxes = []
-        maxIterationsAmt = 4
+        maxIterationsAmt = 5
+        result, error = quad(userInfo.continuous_function, userInfo.integral_xRange[0], userInfo.integral_xRange[1])
         for i in range(maxIterationsAmt):
             numBoxes *= 2
             newBoxesToAdd = self.getSetOfNewBoxes(ax, numBoxes)
@@ -139,15 +141,19 @@ class hello(Scene):
                     number.animate.set_value(self.var_sum).move_to(Area_box.get_center()).shift(DOWN * 0.25).set_z_index(2),
                     run_time=0.50)
             self.remove(*[box for box in CopiedToShowArea])
+
+            print(self.var_sum-result, self.var_sum, result)
+            if (abs(self.var_sum-result) <= 0.15):
+                break
         
         # Make whole polygon
         xVals = self.createIntegralBoxXValues(int(numBoxes))
         points = [ ax.c2p(xVals[i],self.clampYPos(userInfo.continuous_function(xVals[i]))) for i in range(len(xVals)) ]
         points.append(ax.c2p(xVals[-1],0))
         points.append(ax.c2p(xVals[0],0))
-        PerfectAreaUnderCurve = Polygon(*points, color=userInfo.integral_box_color_fill)\
-            .set_fill(color=userInfo.integral_box_color_fill, opacity=1)\
-            .set_stroke(color=userInfo.integral_box_color_outline, width=2)
+        PerfectAreaUnderCurve = Polygon(*points, color=userInfo.box_of_area_under_curve_fill)\
+            .set_fill(color=userInfo.box_of_area_under_curve_fill, opacity=1)\
+            .set_stroke(color=userInfo.box_of_area_under_curve_outline, width=2)
         self.play(FadeIn(PerfectAreaUnderCurve), *[FadeOut(box) for box in currentBoxes], run_time=0.50)
 
         # Animate the area under the curve
@@ -157,7 +163,7 @@ class hello(Scene):
             .set_stroke(color=userInfo.sum_of_integral_boxes_outline, width=2)
         self.play(FadeIn(PerfectAreaUnderCurveCopy), run_time=0.3)
         self.play(Transform(PerfectAreaUnderCurveCopy, Area_box),
-                    number.animate.set_value(2).move_to(Area_box.get_center()).shift(DOWN * 0.25).set_z_index(2),
+                    number.animate.set_value(result).move_to(Area_box.get_center()).shift(DOWN * 0.25).set_z_index(2),
                     run_time=0.50)
 
         self.wait(1)
