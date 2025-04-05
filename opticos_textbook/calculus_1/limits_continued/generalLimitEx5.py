@@ -9,13 +9,14 @@ class hello(Scene):
         backgroundColor = BLACK
         functionColor = RED
 
-        approach = 12 #value x approaches
+        approach = 5.05 #value x approaches
         side = -1 #-1 to approach from left, 1 to approach from right
 
         #Function that is graphed out and used to find output values at each frame
         def func(x):
             if abs(x) > 0.1:
-                return 1/x
+                #return 1/x
+                return 1/(10**x-8**x)
             else:
                 return 10
         #-------------------------------------------------
@@ -63,25 +64,14 @@ class hello(Scene):
         
         #Since the actual values from the value tracker are a bit messy at the end (due to the nature of computer calculations)
         #The final values are manually set to slightly neater numbers that better explain the concept of a limit
-        
+        '''
         self.remove(x_value)
         self.remove(y_value)
         x_value = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1, 0, 0]).set_value(12)
         y_value = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(1/12)
         self.add(x_value)
         self.add(y_value)
-
-        self.wait(1)
-        
-        xTracker = ValueTracker(12)
-
-        self.remove(x_value, y_value)
-        x_value = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1, 0, 0]).set_value(xTracker.get_value()))
-        y_value = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(func(xTracker.get_value())))
-        dot.add_updater(lambda x: x.move_to(ax.c2p(xTracker.get_value(), func(xTracker.get_value()))))
-        
-        self.add(x_value, y_value)
-        self.play(xTracker.animate.set_value(100000), run_time = 5)
+        '''
 
         #Display text that shows the value of the limit
         self.wait(1)
