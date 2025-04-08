@@ -4,32 +4,119 @@ import cv2
 import fitz
 from PIL import Image, ImageTk
 
+from Config import *
+
+# Create and configure new button object
+def newButton(parent, cmd, buttontext):
+    button = Button(parent, command=cmd, text = buttontext, font=buttonFont)
+    button.configure(width=buttonWidth, padx=buttonPadx, pady=buttonPady)
+    return button
+
+############## PAGE CLASS ##############
+class Page(object):
+    def __init__(self, gui, id, canInputFunction = False):
+        # Main frame of this page
+        self.ID = id
+        self.rootFrame = None
+        self.entry = None
+        self.pdf = None
+        self.label = None
+        self.pageNumber = 0
+
+        rootFrame = Frame(gui.parent, bg=frameColor, relief=RAISED)
+        # Create a sub-frame that holds the pdf and scrollbar
+        textFrame = Frame(rootFrame, bg=frameColor, relief=RAISED, width=screenResolution[0]//1.4, height=screenResolution[1]//2)
+        textFrame.pack(pady=objectPackPady, side=LEFT, expand=False)
+
+        # Canvas to display pdf
+        pdfCanvas = Canvas(textFrame, width=screenResolution[0]//1.4, height=screenResolution[1]//2)
+
+        rightButton = Button(textFrame, command=lambda: self.scrollPage(1), text=">", font=buttonFont, width=5)
+        rightButton.pack(pady=objectPackPady, side=RIGHT)
+        leftButton = Button(textFrame, command=lambda: self.scrollPage(-1), text="<", font=buttonFont, width=5)
+        leftButton.pack(pady=objectPackPady, side=RIGHT)
+
+        # Open the PDF file
+        pdfDocument = fitz.open(gui.directory/'../opticos_textbook/calculus_1/intro_to_limits_as_a_concept/Opticos_Intro_to_Limits_as_a_Concept.pdf')
+
+        pdfCanvas.config(width=screenResolution[0]//1.4, height=screenResolution[1]//2)
+        pdfCanvas.pack(fill='both', expand=False)
+        textFrame.config(width=screenResolution[0]//1.4, height=screenResolution[1]//2)
+
+        # Create a label to hold the page image
+        label = Label(pdfCanvas)
+        label.pack(fill='both', expand=False)
 
 
+        # Create an entry box and corresponding sub-frame if needed
+        if canInputFunction:
+            # Sub-frame for the entry and its label
+            entryFrame = Frame(rootFrame, bg=frameColor, relief=RAISED, width=200, height=50)
+            entryFrame.pack(side=TOP, pady=(50, 0))
+
+            # Label for the entry frame
+            entryLabel = Label(entryFrame, text="Function: ", pady=2, bg=frameColor)
+            entryLabel.pack(padx=10, side=LEFT)
+
+            # Entry box for the user to input a function
+            functionBox = Entry(entryFrame)
+            functionBox.pack(padx=5, side=RIGHT)
+
+        # Button to play the page's video
+        videoButton = newButton(rootFrame, lambda: gui.playVideo(str(gui.directory/'stockmp4.mp4')), "Play")
+        videoButton.pack(pady=objectPackPady, side=TOP)
+
+        # Button to go back and return the new page
+        backButton = newButton(rootFrame, lambda: gui.switchFrame((self.ID[0], 0)), 'Back')
+        backButton.pack(pady=objectPackPady, side=BOTTOM)
+
+        self.rootFrame = rootFrame
+        self.entry = entryLabel
+        self.label = label
+        self.pdf = pdfDocument
+
+    def pack(self, **kwargs):
+        page = self.pdf.load_page(0)
+
+        # Render the page to an image
+        pix = page.get_pixmap()
+        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+        
+        ##img.save(str(self.directory) + '/textbook_data/pre-calculus/limits/page' + str(i) + '.jpg', 'JPEG')
+        img_tk = ImageTk.PhotoImage(img)
+        self.label.image = img_tk
+        self.rootFrame.pack(**kwargs)
+
+    def pack_forget(self):
+        self.rootFrame.pack_forget()
+
+    def scrollPage(self, direction):
+        if 0 <= self.pageNumber + direction < self.pdf.page_count:
+            self.pageNumber += direction
+            page = self.pdf.load_page(self.pageNumber)
+            pix = page.get_pixmap()
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            img_tk = ImageTk.PhotoImage(img)
+            self.label.configure(image=img_tk)
+            self.label.image = img_tk
+
+
+
+
+
+############## GUI CLASS ##############
 class GUI(object):
     def __init__(self, master):
-        ##### LAYOUT CONSTANTS #####
         # Application settings
         master.title("Opticos")
         root.resizable(False, False)
-        screenResolution = (1600, 900)
         master.geometry(str(screenResolution[0]) + 'x' + str(screenResolution[1]))
-
-        # Sizing and padding
-        buttonWidth = screenResolution[0] // 30
-        buttonPadx = buttonWidth // 15
-        buttonPady = screenResolution[0] // 100
-        objectPackPady = buttonPady
-
-        # Color and font
-        frameColor = "Gray"
-        buttonFont = ('TkDefaultFont', 15)
-        pageFont = ('TkDefaultFont', 12)
         
         ##### MEMBER VARIABLES #####
         # Set the root Tk() object and parent directory
         self.parent = master
         self.directory = Path(__file__).parent
+        self.pages = []
 
         # Instantiate dictionaries to map frame IDs to frame and their corresponding text
         self.chapterText = dict()
@@ -37,75 +124,6 @@ class GUI(object):
 
         # Store the ID of the current frame at all times
         self.currentFrameID = (0, 0)
-
-        ##### HELPER FUNCTIONS #####
-        # Create and configure new button object
-        def newButton(parent, cmd, buttontext):
-            button = Button(parent, command=cmd, text = buttontext, font=buttonFont)
-            button.configure(width=buttonWidth, padx=buttonPadx, pady=buttonPady)
-            return button
-
-        # Create a new information frame for a topic
-        def newPage(text, canInputFunction=False):
-            # Main frame of this page
-            rootFrame = Frame(master, bg=frameColor, relief=RAISED)
-
-            # Create a sub-frame that holds the pdf and scrollbar
-            textFrame = Frame(rootFrame, bg=frameColor, relief=RAISED, width=screenResolution[0]//1.4, height=screenResolution[1]//2)
-            textFrame.pack(pady=objectPackPady, side=TOP, expand=False)
-
-            # Scrollable canvas to display pdf
-            pdfCanvas = Canvas(textFrame, width=screenResolution[0]//1.4, height=screenResolution[1]//2)
-            scrollBar = Scrollbar(textFrame, orient='vertical')
-            scrollBar.config(command=pdfCanvas.yview)
-            scrollBar.pack(side=RIGHT, fill='y')
-
-            # Set the scrolling region properly
-            pdfCanvas.config(yscrollcommand=scrollBar.set, scrollregion=(0, 0, 10, 100))
-
-            # Open the PDF file
-            pdf_document = fitz.open(self.directory/'../opticos_textbook/calculus_1/intro_to_limits_as_a_concept/Opticos_Intro_to_Limits_as_a_Concept.pdf')
-            for i in range(pdf_document.page_count):
-                # Get the current page
-                page = pdf_document.load_page(i)
-                # Render the page to an image
-                pix = page.get_pixmap()
-                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-                img_tk = ImageTk.PhotoImage(img)
-
-                # Create a label for each page image
-                label = Label(pdfCanvas, image=img_tk)
-                label.image = img_tk
-                label.pack(fill='both', expand=False)
-
-            pdfCanvas.config(width=screenResolution[0]//1.4, height=screenResolution[1]//2)
-            pdfCanvas.pack(fill='both', expand=False)
-            textFrame.config(width=screenResolution[0]//1.4, height=screenResolution[1]//2)
-
-
-            # Create an entry box and corresponding sub-frame if needed
-            if canInputFunction:
-                # Sub-frame for the entry and its label
-                entryFrame = Frame(rootFrame, bg=frameColor, relief=RAISED, width=200, height=50)
-                entryFrame.pack(side=TOP, pady=(50, 0))
-
-                # Label for the entry frame
-                entryLabel = Label(entryFrame, text="Function: ", pady=2, bg=frameColor)
-                entryLabel.pack(padx=10, side=LEFT)
-
-                # Entry box for the user to input a function
-                functionBox = Entry(entryFrame)
-                functionBox.pack(padx=5, side=RIGHT)
-
-            # Button to play the page's video
-            videoButton = newButton(rootFrame, lambda: self.playVideo(str(self.directory/'stockmp4.mp4')), "Play")
-            videoButton.pack(pady=objectPackPady, side=TOP)
-
-            # Button to go back and return the new page
-            backButton = newButton(rootFrame, lambda: self.switchFrame((self.currentFrameID[0], 0)), 'Back')
-            backButton.pack(pady=objectPackPady, side=BOTTOM)
-            return rootFrame
-
 
 
         ##### MAIN FRAME #####
@@ -147,8 +165,8 @@ class GUI(object):
                 text = topic[topic.index('\n'):].strip()
 
                 # Add the new page to the list of frames and text to the list of chapter text
-                self.frames[(i+1, j+1)] = newPage(text, True)
-                self.chapterText[(i+1, j+1)] = text
+                self.frames[(i+1, j+1)] = Page(self, (i+1, j+1), True)
+###self.chapterText[(i+1, j+1)] = text
                 
                 # Button on the subject frame to go to the topic frame
                 topicButton = newButton(frame, lambda n=i+1, m=j+1: self.switchFrame((n, m)), topicTitle)
@@ -170,6 +188,8 @@ class GUI(object):
         next = self.frames[nextID]
         next.pack(expand=True, fill=BOTH)
         self.currentFrameID = nextID
+
+                
 
     # Currently only plays one video, will either use a dict or generate the video through manim on demand   
     def playVideo(self, videoFile):
