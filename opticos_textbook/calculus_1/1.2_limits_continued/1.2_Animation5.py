@@ -60,5 +60,5 @@ class hello(MovingCameraScene):
         #self.camera.frame.move_to([-100, 0, 1])
         #self.play(self.camera.frame.animate.move_to((-500, 0, 0)), run_time=0.000001)
         self.wait(1)
-        self.play(self.camera.frame.animate.move_to((100, 0, 0)), xTracker.animate.set_value(approach + 0.05*side), run_time = 10, Succession = False) 
+        self.play(self.camera.frame.animate.move_to((100, 0, 0)), xTracker.animate.set_value(approach + 0.05*side), run_time = 10, succession = False) 
         self.wait()
