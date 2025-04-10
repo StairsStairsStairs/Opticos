@@ -1,5 +1,5 @@
 from manim import *
-class hello(Scene):
+class Animation5(Scene):
     def construct(self):
         #-------------------------------------------------
         #Customizable parameters
@@ -21,10 +21,9 @@ class hello(Scene):
         #initializes the x and y axes along with the range of values they display
         ax = Axes(
             x_range=[-5, 5], y_range=[-5, 5], axis_config={"include_tip": False},
-            x_length = 7,
-            y_length = 7
         )
-        labels = ax.get_axis_labels(x_label="x", y_label="f(x)") # Labels each axis
+        ax.add_coordinates()
+        labels = ax.get_axis_labels(x_label="x", y_label="g(x)") # Labels each axis
 
         #In manim, a value tracker is an object that displays a constantly updated value
         #By default it starts at some initial value and increases or decreases at a constant rate
@@ -39,6 +38,9 @@ class hello(Scene):
         #Draw graph that plot out function defined by func()
         graph = ax.plot(func, color = functionColor, discontinuities=[1])
 
+        hole = Circle(radius=0.08, color=functionColor, fill_color=backgroundColor, fill_opacity=1, stroke_width=3)
+        hole.move_to(ax.c2p(0, func(0))) 
+
         #Define starting point at the initial point xTracker is defined to
         initial_point = [ax.coords_to_point(xTracker.get_value(), func(xTracker.get_value()))]
         dot = Dot(point = initial_point) #Creates point that moves along function
@@ -49,11 +51,11 @@ class hello(Scene):
 
         #Draws text on screen using Latex
         xText = MathTex(r"x = ").to_edge(UR).shift([-2, 0, 0])
-        functionText = MathTex(r"f(x) = ").to_edge(UR).shift([-2.5, -1, 0])
-        limitText = MathTex(r"\lim \limits_{x \to 0^+} f(x) = 2").to_edge(UR).shift([0, -2, 0])
+        functionText = MathTex(r"g(x) = ").to_edge(UR).shift([-2.5, -1, 0])
+        limitText = MathTex(r"\lim \limits_{x \to 0^+} g(x) = 2").to_edge(UR).shift([0, -2, 0])
         
         #Add all defined elements to the scene
-        self.add(ax, labels, graph, dot, x_value, xText, y_value, functionText)
+        self.add(ax, labels, graph, hole, dot, x_value, xText, y_value, functionText)
         
         #Run value tracker, starts from -4 and and at -0.05
         self.play(xTracker.animate.set_value(approach + 0.05*side), run_time = 3)

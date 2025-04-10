@@ -1,14 +1,13 @@
 from manim import *
-class hello(Scene):
+class Animation3(Scene):
     def construct(self):
         def func(x):
             return -1 * x**2 + 2
     
         ax = Axes(
             x_range=[-5, 5], y_range=[-5, 5], axis_config={"include_tip": False},
-            x_length = 7,
-            y_length = 7
         )
+        ax.add_coordinates()
         labels = ax.get_axis_labels(x_label="x", y_label="f(x)")
 
         xTrackerLeft = ValueTracker(-4)
@@ -16,7 +15,7 @@ class hello(Scene):
         x_value_left = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1, 0, 0]).set_value(xTrackerLeft.get_value()))
         y_value_left = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(func(xTrackerLeft.get_value())))
         
-        graph = ax.plot(func, color = MAROON, discontinuities=[1])
+        graph = ax.plot(func, color = RED, discontinuities=[1])
 
         initial_point_left = [ax.coords_to_point(xTrackerLeft.get_value(), func(xTrackerLeft.get_value()))]
         dot_left = Dot(point=initial_point_left, color = 'green')
@@ -72,10 +71,10 @@ class hello(Scene):
         
         self.wait(1)
 
-        rect = Rectangle(width = 4, height = 1.5, color = BLUE)
+        rect = Rectangle(width = 4, height = 1.5, color = BLUE).shift([0, -2, 0])
         rect.set_fill("#0e5c9c", opacity = 1)
         self.play(Create(rect))
-        limitTextCenter = MathTex(r"\lim \limits_{x \to 0} f(x) = 2")
+        limitTextCenter = MathTex(r"\lim \limits_{x \to 0} f(x) = 2").shift([0, -2, 0])
         self.play(FadeIn(limitTextCenter))
 
         self.wait(3)

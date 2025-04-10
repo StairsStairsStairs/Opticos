@@ -2,95 +2,76 @@ from manim import *
 class hello(Scene):
     def construct(self):
 
+        #-------------------------------------------------
+        #Customizable parameters
+    
         backgroundColor = BLACK
         functionColor = RED
 
-        approach = -1
+        approach = 0.1 #value x approaches
+        side = 1 #-1 to approach from left, 1 to approach from right
 
+        #Function that is graphed out and used to find output values at each frame
         def func(x):
-            if x <= -1:
-                return x + 2
-            if x > - 1:
-                return x**3 - x + 3
-            
+            if abs(x) > 0.1:
+                return 1/x**2
+                #return x**2
+            else:
+                return 10
+        
+        #-------------------------------------------------
+
+        self.camera.background_color = backgroundColor
+
+        #initializes the x and y axes along with the range of values they display
         ax = Axes(
             x_range=[-5, 5], y_range=[-5, 5], axis_config={"include_tip": False},
         )
-        labels = ax.get_axis_labels(x_label="x", y_label="f(x)")
+        ax.add_coordinates()
+        labels = ax.get_axis_labels(x_label="x", y_label="f(x)") # Labels each axis
 
-        xTrackerLeft = ValueTracker(-4)
+        #In manim, a value tracker is an object that displays a constantly updated value
+        #By default it starts at some initial value and increases or decreases at a constant rate
+        #until it reaches it's defined ending value
+        xTracker = ValueTracker(4*side)
 
-        x_value_left = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1, 0, 0]).set_value(xTrackerLeft.get_value()))
-        y_value_left = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(func(xTrackerLeft.get_value())))
+        #Every frame the x and y value of the point gets updated by getting the current value of xTracker. The exact value gets directly displayed
+        #for x and for y the value from the value tracker is plugged into the method func() and the output is what the y value gets set equal to
+        x_value = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1, 0, 0]).set_value(xTracker.get_value()))
+        y_value = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(func(xTracker.get_value())))
         
-        graph = ax.plot(func, color = MAROON, discontinuities=[-1, 1])
+        #Draw graph that plot out function defined by func()
+        graph = ax.plot(func, color = functionColor, discontinuities=[-0.1, 0.1, 1])
 
-        #Place a hole at (-1, 2)
-        hole = Circle(radius=0.08, color=functionColor, fill_color=backgroundColor, fill_opacity=1, stroke_width=3)
-        hole.move_to(ax.c2p(-1, 3))
+        #Define starting point at the initial point xTracker is defined to
+        initial_point = [ax.coords_to_point(xTracker.get_value(), func(xTracker.get_value()))]
+        dot = Dot(point = initial_point) #Creates point that moves along function
 
-        #Place a point  at (-1, f(-1))
-        point = Circle(radius=0.08, color=functionColor, fill_color=functionColor, fill_opacity=1, stroke_width=3)
-        point.move_to(ax.c2p(-1, func(-1)))
+        #Updates the x-coordinate of the point to match the most recent value of xTracker
+        #also plugs the x-coordinate into func() to get the y-value
+        dot.add_updater(lambda x: x.move_to(ax.c2p(xTracker.get_value(), func(xTracker.get_value()))))
 
-        initial_point_left = [ax.coords_to_point(xTrackerLeft.get_value(), func(xTrackerLeft.get_value()))]
-        dot_left = Dot(point=initial_point_left, color = 'green')
+        #Draws text on screen using Latex
+        xText = MathTex(r"x = ").to_edge(UL)
+        functionText = MathTex(r"f(x) = ").to_edge(UL).shift([0, -1, 0])
+        limitText = MathTex(r"\lim \limits_{x \to 0^-} f(x) = \infty").to_edge(UL).shift([0, -2, 0])  
 
-        dot_left.add_updater(lambda x: x.move_to(ax.c2p(xTrackerLeft.get_value(), func(xTrackerLeft.get_value()))))
+        #Add all defined elements to the scene
+        self.add(ax, labels, graph, dot, x_value, xText, y_value, functionText)
 
-        xTextLeft = MathTex(r"x = ").to_edge(UL)
-        functionTextLeft = MathTex(r"f(x) = ").to_edge(UL).shift([0, -1, 0])
-        limitTextLeft = MathTex(r"\lim \limits_{x \to -1^-} f(x) = 1").to_edge(UL).shift([0, -2, 0])
-
-        self.add(ax, labels, graph, hole, point, dot_left, x_value_left, xTextLeft, y_value_left, functionTextLeft)
+        #Run value tracker, starts from -4 and and at -0.05
+        self.play(xTracker.animate.set_value(approach + 0.05*side), run_time = 3)
         
-        self.play(xTrackerLeft.animate.set_value(approach - 0.05), run_time = 3)
-
-        self.remove(x_value_left)
-        self.remove(y_value_left)
-        x_value_left = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1, 0, 0]).set_value(-1.00001)
-        y_value_left = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(0.99999)
-        self.add(x_value_left)
-        self.add(y_value_left)
-
-        self.play(FadeIn(limitTextLeft))
+        #Since the actual values from the value tracker are a bit messy at the end (due to the nature of computer calculations)
+        #The final values are manually set to slightly neater numbers that better explain the concept of a limit
+        self.remove(x_value)
+        self.remove(y_value)
+        x_value = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1, 0, 0]).set_value(0.00001)
+        y_value = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(10000000000)
+        self.add(x_value)
+        self.add(y_value)
+        self.wait()
+        #Display text that shows the value of the limit
+        self.play(FadeIn(limitText))
         
-        self.wait(1)
-        
-        ###########
-        xTrackerRight = ValueTracker(4)
-
-        x_value_right = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UR).shift([0, 0, 0]).set_value(xTrackerRight.get_value()))
-        y_value_right = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UR).shift([-0.5, -1, 0]).set_value(func(xTrackerRight.get_value())))
-
-        initial_point_right = [ax.coords_to_point(xTrackerRight.get_value(), func(xTrackerRight.get_value()))]
-        dot_right = Dot(point=initial_point_right, color = 'blue')
-
-        dot_right.add_updater(lambda x: x.move_to(ax.c2p(xTrackerRight.get_value(), func(xTrackerRight.get_value()))))
-
-        xTextRight = MathTex(r"x = ").to_edge(UR).shift([-2, 0, 0])
-        functionTextRight = MathTex(r"f(x) = ").to_edge(UR).shift([-2.5, -1, 0])
-        limitTextRight = MathTex(r"\lim \limits_{x \to -1^+} f(x) = 3").to_edge(UR).shift([0, -2, 0])
-
-        self.add(dot_right, x_value_right, xTextRight, y_value_right, functionTextRight)
-        
-        self.play(xTrackerRight.animate.set_value(approach + 0.05), run_time = 4)
-
-        self.remove(x_value_right)
-        self.remove(y_value_right)
-        x_value_right = DecimalNumber(num_decimal_places = 5).to_edge(UR).shift([0, 0, 0]).set_value(-0.99999)
-        y_value_right = DecimalNumber(num_decimal_places = 5).to_edge(UR).shift([-0.5, -1, 0]).set_value(3.00001)
-        self.add(x_value_right)
-        self.add(y_value_right)
-
-        self.play(FadeIn(limitTextRight))
-        
-        self.wait(1)
-
-        rect = Rectangle(width = 4, height = 1.5, color = BLUE).shift([0, -1.5, 0])
-        rect.set_fill("#0e5c9c", opacity = 1)
-        self.play(Create(rect))
-        limitTextCenter = MathTex(r"\lim \limits_{x \to -1} f(x)\,\,\text{DNE}").shift([0, -1.5, 0])
-        self.play(FadeIn(limitTextCenter))
-
         self.wait(3)

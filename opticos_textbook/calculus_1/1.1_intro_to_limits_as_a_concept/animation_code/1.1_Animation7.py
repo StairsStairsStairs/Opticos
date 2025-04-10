@@ -1,25 +1,21 @@
 from manim import *
-class hello(Scene):
+class Animation7(Scene):
     def construct(self):
-
+        
         #-------------------------------------------------
         #Customizable parameters
     
         backgroundColor = BLACK
         functionColor = RED
 
-        approach = -0.1 #value x approaches
+        approach = 0 #value x approaches
         side = -1 #-1 to approach from left, 1 to approach from right
 
         #Function that is graphed out and used to find output values at each frame
         def func(x):
-            if abs(x) > 0.1:
-                return 1/x**2
-                #return x**2
-            else:
-                return 10
-        
+            return -1 * x**2 + 2
         #-------------------------------------------------
+
 
         self.camera.background_color = backgroundColor
 
@@ -28,7 +24,7 @@ class hello(Scene):
             x_range=[-5, 5], y_range=[-5, 5], axis_config={"include_tip": False},
         )
         ax.add_coordinates()
-        labels = ax.get_axis_labels(x_label="x", y_label="f(x)") # Labels each axis
+        labels = ax.get_axis_labels(x_label="x", y_label="g(x)") # Labels each axis
 
         #In manim, a value tracker is an object that displays a constantly updated value
         #By default it starts at some initial value and increases or decreases at a constant rate
@@ -41,7 +37,14 @@ class hello(Scene):
         y_value = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(func(xTracker.get_value())))
         
         #Draw graph that plot out function defined by func()
-        graph = ax.plot(func, color = functionColor, discontinuities=[-0.1, 0.1, 1])
+        graph = ax.plot(func, color = functionColor, discontinuities=[1])
+
+        #Place a point discontinutiy at (0, f(0))
+        hole = Circle(radius=0.08, color=functionColor, fill_color=backgroundColor, fill_opacity=1, stroke_width=3)
+        hole.move_to(ax.c2p(0, func(0)))
+
+        loosePoint = Circle(radius=0.08, color=functionColor, fill_color=functionColor, fill_opacity=1, stroke_width=3)
+        loosePoint.move_to(ax.c2p(0, 3))
 
         #Define starting point at the initial point xTracker is defined to
         initial_point = [ax.coords_to_point(xTracker.get_value(), func(xTracker.get_value()))]
@@ -53,12 +56,12 @@ class hello(Scene):
 
         #Draws text on screen using Latex
         xText = MathTex(r"x = ").to_edge(UL)
-        functionText = MathTex(r"f(x) = ").to_edge(UL).shift([0, -1, 0])
-        limitText = MathTex(r"\lim \limits_{x \to 0^-} f(x) = \infty").to_edge(UL).shift([0, -2, 0])  
-
+        functionText = MathTex(r"g(x) = ").to_edge(UL).shift([0, -1, 0])
+        limitText = MathTex(r"\lim \limits_{x \to 0^-} g(x) = 2").to_edge(UL).shift([0, -2, 0])
+        
         #Add all defined elements to the scene
-        self.add(ax, labels, graph, dot, x_value, xText, y_value, functionText)
-
+        self.add(ax, labels, graph, hole, loosePoint, dot, x_value, xText, y_value, functionText)
+        
         #Run value tracker, starts from -4 and and at -0.05
         self.play(xTracker.animate.set_value(approach + 0.05*side), run_time = 3)
         
@@ -67,10 +70,10 @@ class hello(Scene):
         self.remove(x_value)
         self.remove(y_value)
         x_value = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1, 0, 0]).set_value(-0.00001)
-        y_value = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(10000000000)
+        y_value = DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(1.99999)
         self.add(x_value)
         self.add(y_value)
-        self.wait()
+        
         #Display text that shows the value of the limit
         self.play(FadeIn(limitText))
         
