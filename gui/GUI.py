@@ -14,15 +14,17 @@ def newButton(parent, cmd, buttontext):
 
 ############## PAGE CLASS ##############
 class Page(object):
-    def __init__(self, gui, id, canInputFunction = False):
-        # Main frame of this page
+    def __init__(self, gui, id, path, canInputFunction = False):
+        # Initalize member variables
         self.ID = id
         self.rootFrame = None
         self.entry = None
         self.pdf = None
+        self.animations = []
         self.label = None
         self.pageNumber = 0
 
+        # Main frame of this page
         rootFrame = Frame(gui.parent, bg=frameColor, relief=RAISED)
         # Create a sub-frame that holds the pdf and scrollbar
         textFrame = Frame(rootFrame, bg=frameColor, relief=RAISED, width=screenResolution[0]//1.4, height=screenResolution[1]//2)
@@ -36,11 +38,9 @@ class Page(object):
         leftButton = Button(textFrame, command=lambda: self.scrollPage(-1), text="<", font=buttonFont, width=5)
         leftButton.pack(pady=objectPackPady, side=RIGHT)
 
-        # Open the PDF file
-        pdfDocument = fitz.open(gui.directory/'../opticos_textbook/calculus_1/intro_to_limits_as_a_concept/Opticos_Intro_to_Limits_as_a_Concept.pdf')
 
         pdfCanvas.config(width=screenResolution[0]//1.4, height=screenResolution[1]//2)
-        pdfCanvas.pack(fill='both', expand=False)
+        pdfCanvas.pack(fill='both', expand=False, padx=(25, 5))
         textFrame.config(width=screenResolution[0]//1.4, height=screenResolution[1]//2)
 
         # Create a label to hold the page image
@@ -62,18 +62,26 @@ class Page(object):
             functionBox = Entry(entryFrame)
             functionBox.pack(padx=5, side=RIGHT)
 
-        # Button to play the page's video
-        videoButton = newButton(rootFrame, lambda: gui.playVideo(str(gui.directory/'stockmp4.mp4')), "Play")
-        videoButton.pack(pady=objectPackPady, side=TOP)
+            self.entry = functionBox
+
+        # Find animations and pdf
+        animNumber = 0
+        for file in path.iterdir():
+            if str(file)[-4:] == '.mp4':
+                self.animations.append(file)
+                animButton = newButton(rootFrame, lambda n=animNumber: self.playManim(n), 'Animation ' + str(animNumber + 1))
+                animButton.pack(pady=(3, 0), side=TOP)
+                animNumber += 1
+            elif str(file)[-4:] == '.pdf':
+                self.pdf = fitz.open(file)
+        
 
         # Button to go back and return the new page
         backButton = newButton(rootFrame, lambda: gui.switchFrame((self.ID[0], 0)), 'Back')
         backButton.pack(pady=objectPackPady, side=BOTTOM)
 
         self.rootFrame = rootFrame
-        self.entry = entryLabel
         self.label = label
-        self.pdf = pdfDocument
 
     def pack(self, **kwargs):
         page = self.pdf.load_page(0)
@@ -82,8 +90,8 @@ class Page(object):
         pix = page.get_pixmap()
         img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
         
-        ##img.save(str(self.directory) + '/textbook_data/pre-calculus/limits/page' + str(i) + '.jpg', 'JPEG')
         img_tk = ImageTk.PhotoImage(img)
+        self.label.configure(image=img_tk)
         self.label.image = img_tk
         self.rootFrame.pack(**kwargs)
 
@@ -99,6 +107,33 @@ class Page(object):
             img_tk = ImageTk.PhotoImage(img)
             self.label.configure(image=img_tk)
             self.label.image = img_tk
+
+    # Function to play a manimation through a button
+    def playManim(self, animationNumber):
+        videoFile = self.animations[animationNumber]
+
+        # Play the video
+        cap = cv2.VideoCapture(videoFile)
+        if (cap.isOpened()== False):
+            print("Error opening video file")
+            return
+
+        cv2.namedWindow('Animation')
+        cv2.moveWindow('Animation', 1, 1)
+        # Read video frame by frame
+        while(cap.isOpened()):
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            cv2.imshow('Animation', frame)
+            
+            # Press Q on keyboard to exit
+            if cv2.waitKey(10) & 0xFF == ord('q'):
+                break
+
+        cap.release()
+        cv2.destroyAllWindows()
 
 
 
@@ -134,44 +169,42 @@ class GUI(object):
         quitButton = newButton(mainFrame, self.terminate, 'Quit')
         quitButton.pack(pady=objectPackPady, side=BOTTOM)
 
-        # Button to test playing a manim mp4
-        testManimButton = newButton(mainFrame, self.playManim, 'Manim')
-        testManimButton.pack(pady=objectPackPady, side=BOTTOM)
 
         ##### OTHER FRAMES #####
-        # Read from text file, creating frames with buttons for each topic.
-        subjects = open(self.directory/"exampleText.txt").read().split('-----\n')
-        for i in range(len(subjects)):
-            # Create the menu frame for each subject
-            subject = subjects[i]
-            frame = Frame(master, bg=frameColor, relief=GROOVE)
-            self.frames[(i+1, 0)] = frame
+        textbookPath = self.directory/'../opticos_textbook/calculus_1'
+        frame = Frame(master, bg=frameColor, relief=GROOVE)
+        self.frames[(1, 0)] = frame
 
-            # Button on the main frame to go to the subject frame
-            subjectTitle = subject[:subject.index('\n')].strip()
-            subjectButton = newButton(mainFrame, lambda n=i+1: self.switchFrame((n, 0)), subjectTitle)
-            subjectButton.pack(pady=objectPackPady, side=TOP)
-            
-            # Button on the subject frame to go back to the main frame
-            backButton = newButton(frame, lambda: self.switchFrame((0, 0)), "Back")
-            backButton.pack(pady=objectPackPady, side=BOTTOM)
+        # Button on the main frame to go to the subject frame
+        subjectTitle = 'Calculus I'
+        subjectButton = newButton(mainFrame, lambda: self.switchFrame((1, 0)), subjectTitle)
+        subjectButton.pack(pady=objectPackPady, side=TOP)
+        
+        # Button on the subject frame to go back to the main frame
+        backButton = newButton(frame, lambda: self.switchFrame((0, 0)), "Back")
+        backButton.pack(pady=objectPackPady, side=BOTTOM)
 
-            # Read every topic in the subject and make a new frame for each
-            topics = subject.split('\n\n')[1:]
-            for j in range(len(topics)):
-                # Find the title of the topic and the corresponding text for the page
-                topic = topics[j]
-                topicTitle = topic[:topic.index('\n')].strip()
-                text = topic[topic.index('\n'):].strip()
+        # Create pages for Calculus 1 topics
+        for path in textbookPath.iterdir():
+            if path.is_dir():
+                # Find the title of the topic
+                topicName = str(path)
+                topicName = topicName[topicName.rfind('calculus_1/') + 11:]
+                if not topicName[0].isnumeric():
+                    continue
 
-                # Add the new page to the list of frames and text to the list of chapter text
-                self.frames[(i+1, j+1)] = Page(self, (i+1, j+1), True)
-###self.chapterText[(i+1, j+1)] = text
+                # Find the ID of the topic
+                topicID = topicName[:topicName.find('_')]
+                topicID = (int(topicID[:topicID.find('.')]), int(topicID[topicID.find('.')+1:]))
+                topicName = topicName[topicName.find('_')+1:].replace('_', ' ').title()
                 
                 # Button on the subject frame to go to the topic frame
-                topicButton = newButton(frame, lambda n=i+1, m=j+1: self.switchFrame((n, m)), topicTitle)
+                topicButton = newButton(frame, lambda n=topicID: self.switchFrame(n), topicName)
                 topicButton.pack(pady=objectPackPady, side=TOP) 
 
+                # Construct page
+                self.frames[topicID] = Page(self, topicID, path)
+              
         # Pack the main frame so that it is what appears first on startup
         mainFrame.pack(expand=True, fill=BOTH)
 
@@ -184,56 +217,13 @@ class GUI(object):
     #     (#, 0) is the #th subject frame (i.e. (1, 0) is the frame for precalculus topics)
     #     (#, #) is the page with the text of topic #.# (i.e (1, 1) is topic 1.1: precalc->discontinuities)
     def switchFrame(self, nextID):
+        if type(self.frames[self.currentFrameID] == Page):
+            self.frames[self.currentFrameID].pageNumber = 0
         self.frames[self.currentFrameID].pack_forget()
         next = self.frames[nextID]
         next.pack(expand=True, fill=BOTH)
         self.currentFrameID = nextID
 
-                
-
-    # Currently only plays one video, will either use a dict or generate the video through manim on demand   
-    def playVideo(self, videoFile):
-        # Get the function in the entry if one exists (currently only prints, will be used to generate anim)
-        slaves = self.frames[self.currentFrameID].pack_slaves()
-        userFunction = None
-        for slave in slaves:
-            if type(slave) == Frame:
-                slaves = slave.pack_slaves()
-                for slave in slaves:
-                    if type(slave) == Entry:
-                        userFunction = slave.get()
-                        break
-                break
-        if userFunction != None and userFunction != '':
-            print("Function: " + userFunction)
-
-        # Play the video
-        cap = cv2.VideoCapture(videoFile)
-        if (cap.isOpened()== False):
-            print("Error opening video file")
-            return
-
-        cv2.namedWindow('Animation')
-        cv2.moveWindow('Animation', 1, 1)
-        # Read video frame by frame
-        while(cap.isOpened()):
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            cv2.imshow('Animation', frame)
-            
-            # Press Q on keyboard to exit
-            if cv2.waitKey(25) & 0xFF == ord('q'):
-                break
-
-        cap.release()
-        cv2.destroyAllWindows()
-
-
-    # Test function to play a manimation through the GUI
-    def playManim(self):
-        self.playVideo(self.directory/'../media/videos/1080p60/hello.mp4')
 
     # Quit the program
     def terminate(self):
