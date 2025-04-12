@@ -93,7 +93,6 @@ class hello(Scene):
         total = totalPositive + abs(totalNegative)
         ratio_positive = totalPositive / total
         ratio_negative = totalNegative / total
-        print("ratio_positive: ", ratio_positive, "ratio_negative: ", ratio_negative)
         
         # Resize boxes
         height_positive = 3 * ratio_positive
@@ -140,7 +139,7 @@ class hello(Scene):
         Area_box = Square(side_length=3, color=userInfo.sum_of_integral_boxes_outline_positive, fill_opacity=0.0).move_to(RIGHT * 5.25).set_z_index(3)
         Area_box_positive = Square(side_length=3, fill_color=userInfo.sum_of_integral_boxes_fill_positive, fill_opacity=1.0).set_stroke(RED, width=0).set_z_index(2)
         Area_box_negative = Square(side_length=3, fill_color=userInfo.sum_of_integral_boxes_fill_negative, fill_opacity=1.0).set_stroke(RED, width=0).set_z_index(2)
-        updatedPositions = self.setPositionOfAreaBoxPositiveAndNegative(Area_box, Area_box_positive, Area_box_negative, 0.5, 0.5)
+        updatedPositions = self.setPositionOfAreaBoxPositiveAndNegative(Area_box, Area_box_positive, Area_box_negative, 1, 0)
         Area_box_positive.become(updatedPositions[0])
         Area_box_negative.become(updatedPositions[1])
         #   Add text to box
@@ -183,19 +182,30 @@ class hello(Scene):
         points = [ ax.c2p(xVals[i],self.clampYPos(userInfo.continuous_function(xVals[i]))) for i in range(len(xVals)) ]
         points.append(ax.c2p(xVals[-1],0))
         points.append(ax.c2p(xVals[0],0))
-        PerfectAreaUnderCurve = Polygon(*points, color=userInfo.box_of_area_under_curve_fill)\
-            .set_fill(color=userInfo.box_of_area_under_curve_fill, opacity=1)\
-            .set_stroke(color=userInfo.box_of_area_under_curve_outline, width=2)
-        self.play(FadeIn(PerfectAreaUnderCurve), *[FadeOut(box) for box in currentBoxes], run_time=0.50)
+        
+        points_positive = [ ax.c2p(xVals[i],max(0,self.clampYPos(userInfo.continuous_function(xVals[i])))) for i in range(len(xVals)) ]
+        points_negative = [ ax.c2p(xVals[i],min(0,self.clampYPos(userInfo.continuous_function(xVals[i])))) for i in range(len(xVals)) ]
+        points_positive.append(ax.c2p(xVals[-1],0))
+        points_positive.append(ax.c2p(xVals[0],0))
+        points_negative.append(ax.c2p(xVals[-1],0))
+        points_negative.append(ax.c2p(xVals[0],0))
+
+        PerfectAreaUnderCurve_positive = Polygon(*points_positive)\
+            .set_fill(color=userInfo.sum_of_integral_boxes_fill_positive, opacity=1)\
+            .set_stroke(color=userInfo.sum_of_integral_boxes_outline_positive, width=2)
+        PerfectAreaUnderCurve_negative = Polygon(*points_negative)\
+            .set_fill(color=userInfo.sum_of_integral_boxes_fill_negative, opacity=1)\
+            .set_stroke(color=userInfo.sum_of_integral_boxes_outline_negative, width=2)
+        self.play(FadeIn(PerfectAreaUnderCurve_positive), FadeIn(PerfectAreaUnderCurve_negative), *[FadeOut(box) for box in currentBoxes], run_time=0.50)
 
         # Animate the area under the curve
         self.wait(1)
-        PerfectAreaUnderCurveCopy = Polygon(*points, color=userInfo.sum_of_integral_boxes_fill_positive)\
-            .set_fill(color=userInfo.sum_of_integral_boxes_fill_positive, opacity=1)\
+        PerfectAreaUnderCurveCopy = Polygon(*points, color=userInfo.box_of_area_under_curve_fill)\
+            .set_fill(color=userInfo.box_of_area_under_curve_fill, opacity=1)\
             .set_stroke(color=userInfo.sum_of_integral_boxes_outline_positive, width=2)
         self.play(FadeIn(PerfectAreaUnderCurveCopy), run_time=0.3)
         self.play(Transform(PerfectAreaUnderCurveCopy, Area_box),
                     number.animate.set_value(result).move_to(Area_box.get_center()).shift(DOWN * 0.25).set_z_index(2),
-                    run_time=0.50)
+                    run_time=0.50) # Doesn't update colors in Area box for ratio of positive and negative area
 
         self.wait(1)
