@@ -6,8 +6,10 @@ integral_xRange = [-2, 2]
 integral_box_color_outline = rgb_to_color((0.0, 0.0, 0.0))
 integral_box_color_fill = rgb_to_color((0.6, 0.4, 0.6))
 
-sum_of_integral_boxes_outline = rgb_to_color((0.0, 0.0, 0.0))
-sum_of_integral_boxes_fill = rgb_to_color((0.0, 0.6, 0.6))
+sum_of_integral_boxes_outline_positive = rgb_to_color((0.0, 0.0, 0.0))
+sum_of_integral_boxes_fill_positive = rgb_to_color((0.0, 0.6, 0.6))
+sum_of_integral_boxes_outline_negative = rgb_to_color((0.0, 0.0, 0.0))
+sum_of_integral_boxes_fill_negative = rgb_to_color((0.6, 0.4, 0.0))
 
 box_of_area_under_curve_outline = rgb_to_color((6.0, 6.0, 0.0))
 box_of_area_under_curve_fill = rgb_to_color((0.6, 0.6, 0.0))
