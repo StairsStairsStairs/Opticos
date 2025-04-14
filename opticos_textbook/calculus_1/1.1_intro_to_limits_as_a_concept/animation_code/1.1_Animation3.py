@@ -1,14 +1,13 @@
 from manim import *
-class hello(Scene):
+class Animation3(Scene):
     def construct(self):
         def func(x):
             return -1 * x**2 + 2
-        
-        #self.camera.background_color=GREEN
-
+    
         ax = Axes(
-            x_range=[-5, 5], y_range=[-15, 5], axis_config={"include_tip": False},
+            x_range=[-5, 5], y_range=[-5, 5], axis_config={"include_tip": False},
         )
+        ax.add_coordinates()
         labels = ax.get_axis_labels(x_label="x", y_label="f(x)")
 
         xTrackerLeft = ValueTracker(-4)
@@ -16,22 +15,20 @@ class hello(Scene):
         x_value_left = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1, 0, 0]).set_value(xTrackerLeft.get_value()))
         y_value_left = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UL).shift([1.8, -1, 0]).set_value(func(xTrackerLeft.get_value())))
         
-        graph = ax.plot(func, color=MAROON, discontinuities=[1])
+        graph = ax.plot(func, color = RED, discontinuities=[1])
 
         initial_point_left = [ax.coords_to_point(xTrackerLeft.get_value(), func(xTrackerLeft.get_value()))]
         dot_left = Dot(point=initial_point_left, color = 'green')
 
         dot_left.add_updater(lambda x: x.move_to(ax.c2p(xTrackerLeft.get_value(), func(xTrackerLeft.get_value()))))
-        x_space_left = np.linspace(-10, 0, 20)
-        maximum_index_left = func(x_space_left).argmax()
 
         xTextLeft = MathTex(r"x = ").to_edge(UL)
         functionTextLeft = MathTex(r"f(x) = ").to_edge(UL).shift([0, -1, 0])
-        limitTextLeft = MathTex(r"\lim \limits_{x \to 0^-} f(x) = 2").to_edge(UL).shift([0, -2.75, 0])
+        limitTextLeft = MathTex(r"\lim \limits_{x \to 0^-} f(x) = 2").to_edge(UL).shift([0, -2, 0])
 
         self.add(ax, labels, graph, dot_left, x_value_left, xTextLeft, y_value_left, functionTextLeft)
         
-        self.play(xTrackerLeft.animate.set_value(x_space_left[maximum_index_left] - 0.05), run_time = 3)
+        self.play(xTrackerLeft.animate.set_value(-0.05), run_time = 3)
 
         self.remove(x_value_left)
         self.remove(y_value_left)
@@ -54,16 +51,14 @@ class hello(Scene):
         dot_right = Dot(point=initial_point_right, color = 'blue')
 
         dot_right.add_updater(lambda x: x.move_to(ax.c2p(xTrackerRight.get_value(), func(xTrackerRight.get_value()))))
-        x_space_right = np.linspace(-10, 0, 20)
-        maximum_index_right = func(x_space_right).argmax()
 
         xTextRight = MathTex(r"x = ").to_edge(UR).shift([-2, 0, 0])
         functionTextRight = MathTex(r"f(x) = ").to_edge(UR).shift([-2.5, -1, 0])
-        limitTextRight = MathTex(r"\lim \limits_{x \to 0^+} f(x) = 2").to_edge(UR).shift([0, -2.75, 0])
+        limitTextRight = MathTex(r"\lim \limits_{x \to 0^+} f(x) = 2").to_edge(UR).shift([0, -2, 0])
 
         self.add(dot_right, x_value_right, xTextRight, y_value_right, functionTextRight)
         
-        self.play(xTrackerRight.animate.set_value(x_space_right[maximum_index_right] + 0.05), run_time = 3)
+        self.play(xTrackerRight.animate.set_value(0.05), run_time = 3)
 
         self.remove(x_value_right)
         self.remove(y_value_right)
@@ -76,10 +71,10 @@ class hello(Scene):
         
         self.wait(1)
 
-        rect = Rectangle(width = 4, height = 1.5, color = BLUE)
+        rect = Rectangle(width = 4, height = 1.5, color = BLUE).shift([0, -2, 0])
         rect.set_fill("#0e5c9c", opacity = 1)
         self.play(Create(rect))
-        limitTextCenter = MathTex(r"\lim \limits_{x \to 0} f(x) = 2")
+        limitTextCenter = MathTex(r"\lim \limits_{x \to 0} f(x) = 2").shift([0, -2, 0])
         self.play(FadeIn(limitTextCenter))
 
         self.wait(3)
