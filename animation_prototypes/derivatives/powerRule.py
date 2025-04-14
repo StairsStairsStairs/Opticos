@@ -58,6 +58,12 @@ class Graphing(Scene):
         end_dot = Dot(color=RED).move_to(axes.c2p(1,1))
         end_offscreen_dot = Dot(color = BLACK).move_to(axes.c2p(-2, -8))
 
+        final_dot = Dot(color=WHITE).move_to(axes.c2p(1,2))
+        slope_label = axes.get_graph_label(graph, label="2(1) = 2")
+        slope_label_position = axes.c2p(1,1)
+        slope_label.next_to(slope_label_position, RIGHT)
+        
+
 
         
 
@@ -76,9 +82,10 @@ class Graphing(Scene):
 
         #Display graph
         self.add(label)
-        self.play(Create(axes), run_time = 2.5)
-        self.play(Create(graph), run_time = 3)
-        self.play(Create(graph_label), run_time = 0.5)
+        
+        self.play(Create(axes), run_time = 2)
+        self.play(Create(graph), run_time = 2)
+        self.play(Create(graph_label), run_time = 0.25)
         self.wait(0.5)
         self.add(dot)
         self.add(end_dot)
@@ -92,6 +99,10 @@ class Graphing(Scene):
         self.remove(dot)
         self.remove(end_dot)
         self.play(Transform(graph, graph2), Transform(graph_label, graph_label_2))
+        self.wait(1)
+        self.add(final_dot)
+        self.wait(1)
+        self.play(Create(slope_label, run_time = 0.25))
         self.wait(1)
 
         
