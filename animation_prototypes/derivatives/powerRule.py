@@ -46,11 +46,17 @@ class Graphing(Scene):
             x2, y2 = axes.point_to_coords(dot.get_center())[:2] #extract the first two elements
             
             slope = (y2 - y1)/(x2 - x1)
-            return round(slope, 3)
+            if (abs(3 - slope) < 0.0001):
+                return 3
+            elif (abs(2 - slope) < 0.0001):
+                return 2
+            else:
+                return round(slope, 3)
+                #return round(slope, 3)
             #return (dot.get_center()[1] - end_dot.get_center()[1])/(dot.get_center()[0] - end_dot.get_center()[0])
 
         def update_label(mob):
-            mob.become(MathTex("slope = "+(str(calculate_slope(dot, end_dot, axes))))).to_corner(UP+RIGHT)
+            mob.become(MathTex("slope = "+(str(calculate_slope(dot, end_dot, axes))))).next_to(axes.c2p(2.5,5.5))
 
         # Create a dot and set its starting position
         dot = Dot(color=WHITE).move_to(axes.c2p(2, 4))
@@ -98,11 +104,12 @@ class Graphing(Scene):
         self.wait(1)
         self.remove(dot)
         self.remove(end_dot)
+        self.remove(label)
         self.play(Transform(graph, graph2), Transform(graph_label, graph_label_2))
         self.wait(1)
         self.add(final_dot)
         self.wait(1)
-        self.play(Create(slope_label, run_time = 0.25))
+        self.play(Create(slope_label, run_time = 0.4))
         self.wait(1)
 
         
