@@ -124,21 +124,24 @@ class hello(Scene):
         return toReturn
 
     def construct(self):
+        # Set up scene
         self.var_sum = 0
         self.var_sum_pos = 0
         self.var_sum_neg = 0
         self.camera.background_color = userInfo.background_color
         func = userInfo.continuous_function
 
-        # Get Axis Ranges
+        # Get Axis Range for X
         new_x_range = [userInfo.integral_xRange[0] - 1, userInfo.integral_xRange[1] + 1, 0]
         new_x_range[2] = math.ceil((new_x_range[1] - new_x_range[0]) / 10)
 
+        # Get Axis Range for Y
         min_res = minimize_scalar(func, bounds=(userInfo.integral_xRange[0], userInfo.integral_xRange[1]), method='bounded')
         max_res = minimize_scalar(lambda x: -func(x), bounds=(userInfo.integral_xRange[0], userInfo.integral_xRange[1]), method='bounded')
-
         custom_y_range = [func(min_res.x)-1, func(max_res.x)+1, 0]
         custom_y_range[2] = math.ceil((custom_y_range[1] - custom_y_range[0]) / 10)
+
+        # Sets max and min y to make sure animations aren't tooo far off screen
         self.min_y = custom_y_range[0]*1.1
         self.max_y = custom_y_range[1]*1.1
 
@@ -157,6 +160,7 @@ class hello(Scene):
         Area_box = Square(side_length=3, color=userInfo.sum_of_integral_boxes_outline_positive, fill_opacity=0.0).move_to(RIGHT * 5.25).set_z_index(3)
         Area_box_positive = Square(side_length=3, fill_color=userInfo.sum_of_integral_boxes_fill_positive, fill_opacity=1.0).set_stroke(RED, width=0).set_z_index(2)
         Area_box_negative = Square(side_length=3, fill_color=userInfo.sum_of_integral_boxes_fill_negative, fill_opacity=1.0).set_stroke(RED, width=0).set_z_index(2)
+        #  Make positive and negative aspects of area box the same size (both 50% of area box)
         updatedPositions = self.setPositionOfAreaBoxPositiveAndNegative(Area_box, Area_box_positive, Area_box_negative, 1, 0)
         Area_box_positive.become(updatedPositions[0])
         Area_box_negative.become(updatedPositions[1])
@@ -169,7 +173,7 @@ class hello(Scene):
         number.move_to(Area_box.get_center()).shift(DOWN * 0.25)
         number.set_z_index(2)
         
-        # Animate
+        # Animate everything to set up scene
         self.play(Create(ax), Create(Area_box), Create(Area_box_positive), Create(Area_box_negative))
         self.play(Create(parabola), Create(Area_text), Create(number))
 
@@ -178,20 +182,23 @@ class hello(Scene):
         maxIterationsAmt = 4
         result, error = quad(userInfo.continuous_function, userInfo.integral_xRange[0], userInfo.integral_xRange[1])
         for i in range(maxIterationsAmt):
+            # double amount of boxes
             numBoxes *= 2
-            newBoxesToAdd = self.getSetOfNewBoxes(ax, numBoxes)
-            currentBoxes = self.animateAllBoxes(ax, currentBoxes, newBoxesToAdd)
+            newBoxesToAdd = self.getSetOfNewBoxes(ax, numBoxes) # Get boxes
+            currentBoxes = self.animateAllBoxes(ax, currentBoxes, newBoxesToAdd) # animate to appear
             self.wait(1)
             
+            # Copy all of them and move them to area box
             CopiedToShowArea = self.copyAllBoxes(currentBoxes)
             updatedPositions = self.setPositionOfAreaBoxPositiveAndNegative(Area_box, Area_box_positive, Area_box_negative, self.var_sum_pos, abs(self.var_sum_neg))
-            self.add(*[box for box in CopiedToShowArea])
-            self.play(*[box.animate.set_opacity(1) for box in CopiedToShowArea], run_time=0.3)
+            self.add(*[box for box in CopiedToShowArea]) # Add with 0 opacity
+            self.play(*[box.animate.set_opacity(1) for box in CopiedToShowArea], run_time=0.3) # Show positive and negative clone of boxes appear
             self.play(*[Transform(box, Area_box) for box in CopiedToShowArea], Transform(Area_box_positive, updatedPositions[0]), Transform(Area_box_negative, updatedPositions[1]),
                     number.animate.set_value(self.var_sum).move_to(Area_box.get_center()).shift(DOWN * 0.25).set_z_index(2),
-                    run_time=0.50)
-            self.remove(*[box for box in CopiedToShowArea])
+                    run_time=0.50) # Update everything when recalculating area
+            self.remove(*[box for box in CopiedToShowArea]) # Delete boxes no longer needed
 
+            # Don't iterate again if very close to result
             if (abs(self.var_sum-result) <= 0.15):
                 break
         
@@ -201,6 +208,7 @@ class hello(Scene):
         points.append(ax.c2p(xVals[-1],0))
         points.append(ax.c2p(xVals[0],0))
         
+        # Make all points in polygon when only showing positive or negative area
         points_positive = [ ax.c2p(xVals[i],max(0,self.clampYPos(userInfo.continuous_function(xVals[i])))) for i in range(len(xVals)) ]
         points_negative = [ ax.c2p(xVals[i],min(0,self.clampYPos(userInfo.continuous_function(xVals[i])))) for i in range(len(xVals)) ]
         points_positive.append(ax.c2p(xVals[-1],0))
@@ -208,6 +216,7 @@ class hello(Scene):
         points_negative.append(ax.c2p(xVals[-1],0))
         points_negative.append(ax.c2p(xVals[0],0))
 
+        # Make both polygons and fade them in
         PerfectAreaUnderCurve_positive = Polygon(*points_positive)\
             .set_fill(color=userInfo.sum_of_integral_boxes_fill_positive, opacity=1)\
             .set_stroke(color=userInfo.sum_of_integral_boxes_outline_positive, width=2)
@@ -218,6 +227,7 @@ class hello(Scene):
 
         # Animate the area under the curve
         self.wait(1)
+        # same as in loop. Make copy, update area number, etc.
         PerfectAreaUnderCurveCopy = Polygon(*points, color=userInfo.box_of_area_under_curve_fill)\
             .set_fill(color=userInfo.box_of_area_under_curve_fill, opacity=1)\
             .set_stroke(color=userInfo.sum_of_integral_boxes_outline_positive, width=2)
