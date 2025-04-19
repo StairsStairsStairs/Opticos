@@ -19,6 +19,7 @@ sum_of_integral_boxes_fill_negative = rgb_to_color((0.6, 0.4, 0.0))
 
 # Controls the outline and color of the box to the right of the graph that shows the area under the curve.
 box_of_area_under_curve_outline = rgb_to_color((6.0, 6.0, 0.0))
+box_of_area_under_curve_fill = rgb_to_color((0.6, 0.6, 0.0))
 
 # Controls function color and function
 function_color = rgb_to_color((0.2, 0.6, 0.8))
