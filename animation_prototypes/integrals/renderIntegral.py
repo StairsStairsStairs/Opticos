@@ -8,9 +8,13 @@ from scipy.integrate import quad
 # manim ./animation_prototypes/integrals/renderIntegral.py
 
 class hello(Scene):
+    # Gets a value and returns the value clamped to the min and max y values
+    # Used to prevent boxes from being rendered far off screen
     def clampYPos(self, value):
         return max(self.min_y, min(value, self.max_y))
 
+    # Gets a value and returns all evenly spaced values between the start and end
+    # of the provided integral range.
     def createIntegralBoxXValues(self, numValues):
         totalRange = userInfo.integral_xRange[1] - userInfo.integral_xRange[0]
         toReturn = [userInfo.integral_xRange[0]]
@@ -18,6 +22,8 @@ class hello(Scene):
             toReturn.append(toReturn[-1]+(totalRange/numValues))
         return toReturn
     
+    # Creates a box on the proper coordinates and colors given a lower and upper x bound
+    # You can also have the box be bounded to the lower or upper x range
     def createIntegralBox(self, x_lower, x_upper, ax, aproxWithLower=True):
         if aproxWithLower:
             self.var_sum += userInfo.continuous_function(x_lower) * abs(x_upper - x_lower)
@@ -47,6 +53,8 @@ class hello(Scene):
             )
         return rect
 
+    # Creates a set of "numBoxesNow" amount of boxes that are evenly spaced between the start and end of the integral range,
+    # and returns them as a list of boxes. Also recalculates the sum of the boxes.
     def getSetOfNewBoxes(self, ax, numBoxesNow, aproxWithLower=True):
         self.var_sum = 0
         self.var_sum_pos = 0
@@ -58,7 +66,12 @@ class hello(Scene):
             allRects.append(rect)
         return allRects
 
+    # Given a list of old and new boxes, this will make all new appear properly and delete unneeded boxes.
+    # This may include moving all old boxes to new box locations, deleting all boxes if no boxes are needed, or creating new boxes if needed.
+    # Returns the list of boxes that are currently on screen.
     def animateAllBoxes(self, ax, allOldBoxes, allNewBoxes):
+        # Move all old boxes to new box locations
+        # If number of old boxes is less than new boxes, create new boxes to fill the gap
         if (len(allOldBoxes) != 0 and len(allNewBoxes) != 0):
             indexToStartCreating = min(len(allOldBoxes), len(allNewBoxes))
             while len(allOldBoxes) < len(allNewBoxes):
@@ -67,19 +80,22 @@ class hello(Scene):
                 self.add(newBox)
             self.play(*[Transform(oldBox, newBox) for oldBox, newBox in zip(allOldBoxes, allNewBoxes)], run_time=0.50)
             return allOldBoxes
+        # Delete all boxes since none are needed now
         if (len(allOldBoxes) != 0):
             self.play(*[Uncreate(box) for box in allOldBoxes], run_time=0.50)
             return []
+        # Make new boxes cause none existed before
         if (len(allNewBoxes) != 0):
             self.play(*[Create(box) for box in allNewBoxes], run_time=0.50)
             return allNewBoxes
         return None
 
+    # Copies all boxes in a range and makes them a different color to help with the area sum on the right
     def copyAllBoxes(self, boxes):
         newBoxes = []
         for box in boxes:
             newBoxes.append(box.copy())
-            # turn boxes blue
+            # Change color depending on if its above or below the x axis
             newBoxes[-1].set_color(userInfo.sum_of_integral_boxes_outline_positive)
             newBoxes[-1].set_fill(userInfo.sum_of_integral_boxes_fill_positive, opacity=0)
             if (newBoxes[-1].get_center()[1] < 0):
@@ -88,6 +104,8 @@ class hello(Scene):
             newBoxes[-1].set_z_index(1)
         return newBoxes
 
+    # Returns the new boxes that properly visualize the ratio between positive and negative area
+    # This only returns new valid boxes, it does not animate them in or out.
     def setPositionOfAreaBoxPositiveAndNegative(self, Area_box, Area_box_positive, Area_box_negative, totalPositive, totalNegative):
         # Normalize ratio
         total = totalPositive + abs(totalNegative)
