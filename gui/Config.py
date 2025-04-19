@@ -4,6 +4,7 @@ buttonWidth = screenResolution[0] // 30
 buttonPadx = buttonWidth // 15
 buttonPady = screenResolution[0] // 100
 objectPackPady = buttonPady
+videoScaleFactor = 0.75
 
 # Color and font
 frameColor = "Gray"

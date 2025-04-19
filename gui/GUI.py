@@ -70,7 +70,8 @@ class Page(object):
             if str(file)[-4:] == '.mp4':
                 self.animations.append(file)
                 animButton = newButton(rootFrame, lambda n=animNumber: self.playManim(n), 'Animation ' + str(animNumber + 1))
-                animButton.pack(pady=(3, 0), side=TOP)
+                if animNumber == 0: animButton.pack(pady=(25, 0), side=TOP)
+                else: animButton.pack(pady=(3, 0), side=TOP)
                 animNumber += 1
             elif str(file)[-4:] == '.pdf':
                 self.pdf = fitz.open(file)
@@ -125,6 +126,10 @@ class Page(object):
             ret, frame = cap.read()
             if not ret:
                 break
+
+            # Rescale video
+            dimensions = (int(frame.shape[1] * videoScaleFactor), int(frame.shape[0] * videoScaleFactor))
+            frame = cv2.resize(frame, dimensions, interpolation=cv2.INTER_AREA)
 
             cv2.imshow('Animation', frame)
             
