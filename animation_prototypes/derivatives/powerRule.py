@@ -84,10 +84,10 @@ class Graphing(Scene):
 
         label = MathTex("slope = "+(str(calculate_slope(dot, end_dot, axes))))
         label.add_updater(update_label)
-        label.to_corner(UP + RIGHT)
+        label.next_to(axes.c2p(2.5,5.5))
 
         #Display graph
-        self.add(label)
+        
         
         self.play(Create(axes), run_time = 2)
         self.play(Create(graph), run_time = 2)
@@ -97,7 +97,8 @@ class Graphing(Scene):
         self.add(end_dot)
         self.wait(0.5)
         self.add(line)
-        self.wait(0.5)
+        self.add(label)
+        self.wait(1)
         self.play(UpdateFromAlphaFunc(dot, update_dot, run_time = 2, rate_func = linear),
             UpdateFromAlphaFunc(offscreen_dot, update_offscreen_dot, run_time = 2, rate_func = linear))
         
