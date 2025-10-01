@@ -1,12 +1,12 @@
 from manim import *
-class hello(Scene):
+class Animation1(Scene):
     def construct(self):
 
         #-------------------------------------------------
         #Customizable parameters
     
         backgroundColor = BLACK
-        functionColor = RED
+        functionColor = BLUE
 
         approach = -1 #value x approaches
         side = -1 #-1 to approach from left, 1 to approach from right
@@ -26,6 +26,7 @@ class hello(Scene):
         ax = Axes(
             x_range=[-5, 5], y_range=[-5, 5], axis_config={"include_tip": False},
         )
+        ax.add_coordinates()
         labels = ax.get_axis_labels(x_label="x", y_label="f(x)") # Labels each axis
 
         #In manim, a value tracker is an object that displays a constantly updated value

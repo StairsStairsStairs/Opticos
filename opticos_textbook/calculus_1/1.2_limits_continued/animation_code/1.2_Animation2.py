@@ -1,21 +1,25 @@
 from manim import *
 class Animation2(Scene):
     def construct(self):
+
         #-------------------------------------------------
         #Customizable parameters
     
         backgroundColor = BLACK
-        functionColor = RED
+        functionColor = BLUE
 
-        approach = 0 #value x approaches
+        approach = -1 #value x approaches
         side = 1 #-1 to approach from left, 1 to approach from right
 
         #Function that is graphed out and used to find output values at each frame
         def func(x):
-            return -1 * x**2 + 2
+            if x <= -1:
+                return x + 2
+            if x > - 1:
+                return x**3 - x + 3
+        
         #-------------------------------------------------
 
-        
         self.camera.background_color = backgroundColor
 
         #initializes the x and y axes along with the range of values they display
@@ -36,7 +40,15 @@ class Animation2(Scene):
         y_value = always_redraw(lambda: DecimalNumber(num_decimal_places = 5).to_edge(UR).shift([-0.5, -1, 0]).set_value(func(xTracker.get_value())))
         
         #Draw graph that plot out function defined by func()
-        graph = ax.plot(func, color = functionColor, discontinuities=[1])
+        graph = ax.plot(func, color = functionColor, discontinuities=[-1, 1])
+
+        #Place a hole at (-1, 2)
+        hole = Circle(radius=0.08, color=functionColor, fill_color=backgroundColor, fill_opacity=1, stroke_width=3)
+        hole.move_to(ax.c2p(-1, 3))
+
+        #Place a point  at (-1, f(-1))
+        point = Circle(radius=0.08, color=functionColor, fill_color=functionColor, fill_opacity=1, stroke_width=3)
+        point.move_to(ax.c2p(-1, func(-1)))
 
         #Define starting point at the initial point xTracker is defined to
         initial_point = [ax.coords_to_point(xTracker.get_value(), func(xTracker.get_value()))]
@@ -47,13 +59,16 @@ class Animation2(Scene):
         dot.add_updater(lambda x: x.move_to(ax.c2p(xTracker.get_value(), func(xTracker.get_value()))))
 
         #Draws text on screen using Latex
+        #xText = MathTex(r"x = ").to_edge(UL)
+        #functionText = MathTex(r"f(x) = ").to_edge(UL).shift([0, -1, 0])
+        #limitText = MathTex(r"\lim \limits_{x \to 0^-} f(x) = 1").to_edge(UL).shift([0, -2, 0])
         xText = MathTex(r"x = ").to_edge(UR).shift([-2, 0, 0])
         functionText = MathTex(r"f(x) = ").to_edge(UR).shift([-2.5, -1, 0])
-        limitText = MathTex(r"\lim \limits_{x \to 0^+} f(x) = 2").to_edge(UR).shift([0, -2, 0])
-        
+        limitText = MathTex(r"\lim \limits_{x \to 0^+} f(x) = 2").to_edge(UR).shift([0, -2, 0])  
+
         #Add all defined elements to the scene
-        self.add(ax, labels, graph, dot, x_value, xText, y_value, functionText)
-        
+        self.add(ax, labels, graph, hole, point, dot, x_value, xText, y_value, functionText)
+
         #Run value tracker, starts from -4 and and at -0.05
         self.play(xTracker.animate.set_value(approach + 0.05*side), run_time = 3)
         
@@ -61,11 +76,11 @@ class Animation2(Scene):
         #The final values are manually set to slightly neater numbers that better explain the concept of a limit
         self.remove(x_value)
         self.remove(y_value)
-        x_value = DecimalNumber(num_decimal_places = 5).to_edge(UR).set_value(0.00001)
-        y_value = DecimalNumber(num_decimal_places = 5).to_edge(UR).shift([-0.5, -1, 0]).set_value(1.99999)
+        x_value = DecimalNumber(num_decimal_places = 5).to_edge(UR).set_value(-0.99999)
+        y_value = DecimalNumber(num_decimal_places = 5).to_edge(UR).shift([-0.5, -1, 0]).set_value(3.00001)
         self.add(x_value)
         self.add(y_value)
-
+        
         #Display text that shows the value of the limit
         self.play(FadeIn(limitText))
         
