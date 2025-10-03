@@ -1,0 +1,2 @@
+- media/ — When Manim creates an animation it places the animation along with all files the animation uses (mp4s, teX files, graphics, etc.) into this directory
+- _pycache_/ — Auto-generated Python bytecode for faster execution. Can be safely ignored or deleted.
