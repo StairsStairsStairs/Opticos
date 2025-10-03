@@ -1,10 +1,7 @@
 from manim import *
 import math
 
-#config.frame_width = 8  # Default is 14 units wide
-#config.frame_height = 8  # Default is 8 units high
-
-class hello(Scene):
+class limit_animation(Scene):
     def __init__(self, color = RED, function = "x", approach = 0, side = -1, **kwargs):
         super().__init__(**kwargs)
         self.function = function
@@ -14,12 +11,12 @@ class hello(Scene):
 
     #Function that is graphed out and used to find output values at each frame
     def func(self, fstr, x, op):
-        #print(x, 1)
         if isinstance(x, (np.float32, np.float64)):
             x = float(x)
-
         x = str(x)
 
+
+        #The following code segment parses the string representing the function the user inputted
         #replaces instances where number are concated with x to be <num>*x
         if (fstr[0:2] == "-x"):
             fstr = "-1*" + fstr[1:len(fstr)]
@@ -55,8 +52,6 @@ class hello(Scene):
                     nums[i] = self.func(nums[i], x, '^')
                     
         #Perfrom nums[0] <op> nums[1] <op> ... <op> nums[len(nums - 1)]
-        #print(nums, x)
-        #print(x)
         total = float(nums[0])
         for i in range(1, len(nums)):
             if (op == '+'):
@@ -77,35 +72,18 @@ class hello(Scene):
         functionColor = self.color
         value_panel = Rectangle(width=6, height=config.frame_height, color="#0a0a4a", fill_color = "#0a0a4a", fill_opacity = 1).to_edge(LEFT).shift([-0.5, 0, 0])
 
-        #boundScale = 4
         xRound = int(math.ceil(abs(self.approach)))
         yApproach = self.func(self.function, abs(self.approach), "+")
         yRound = int(math.ceil(yApproach))
         boundScale = 5*(max(xRound, yRound) // 5 + 1)
         if ((self.approach < 0 and self.side == -1) or (self.approach > 0 and self.side == 1)):
             boundScale += 5
-        '''
-        if (abs(self.approach) > boundScale) :
-            boundScale = self.approach + 2
-
-        approachBound = abs(self.func(self.function, self.approach, "+"))
-        if (approachBound > boundScale):
-            boundScale = approachBound + 2
-        '''    
         
         leftBound = -2
         rightBound = 18
         bottomBound = -10
         topBound = 10
 
-        #approach = 0 #value x approaches
-        #side = -1 #-1 to approach from left, 1 to approach from right
-
-                        
-            #return -1 * x**2 + 2
-        #-------------------------------------------------
-
-        
         self.camera.background_color = backgroundColor
 
         #initializes the x and y axes along with the range of values they display
