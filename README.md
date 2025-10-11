@@ -1,11 +1,5 @@
-#Opticos Directory Structure
+# Opticos Repository Structure
 
-- gui/ — files for the GUI
-- interactive_animators/ — non GUI files for the interactive animators
-	- derivative_animator/ — derivative animator files
-	- integral_animator/ — integral animator files
-	- limit_animator/ — limit animator files
-- opticos_textbook/ — Opticos Textbook files
-- extras/
-	- derivative_animations/ — miscellaneous animations 		explaining derivatives
-	- logo_drafts/ — contains Opticos logo image
+- source/ — source files used to run the Opticos Program
+- user_manual/ — PDF explaining everything you need to know about Opticos from an end user's perspective
+- extras/ — miscellaneous files that aren't part of the source but we still felt were interesting to include such as animation prototypes and the Opticos logo
