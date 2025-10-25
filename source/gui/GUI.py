@@ -78,7 +78,13 @@ class Page(object):
         
 
         # Button to go back and return the new page
-        backButton = newButton(rootFrame, lambda: gui.switchFrame((self.ID[0], 0)), 'Back')
+        # backButton = newButton(rootFrame, lambda: gui.switchFrame((self.ID[0], 0)), 'Back')
+        # backButton = newButton(rootFrame, lambda: gui.parent.after_idle(lambda: gui.switchFrame((self.ID[0], 0))), 'Back')
+        backButton = newButton(
+        rootFrame,
+        lambda: gui.parent.after_idle(lambda: gui.switchFrame((self.ID[0], 0))),
+        'Back'
+)
         backButton.pack(pady=objectPackPady, side=BOTTOM)
 
         self.rootFrame = rootFrame
@@ -149,7 +155,7 @@ class GUI(object):
     def __init__(self, master):
         # Application settings
         master.title("Opticos")
-        root.resizable(False, False)
+        master.resizable(False, False)
         master.geometry(str(screenResolution[0]) + 'x' + str(screenResolution[1]))
         
         ##### MEMBER VARIABLES #####
@@ -186,8 +192,8 @@ class GUI(object):
         subjectButton.pack(pady=objectPackPady, side=TOP)
         
         # Button on the subject frame to go back to the main frame
-        backButton = newButton(frame, lambda: self.switchFrame((0, 0)), "Back")
-        backButton.pack(pady=objectPackPady, side=BOTTOM)
+        # backButton = newButton(mainFrame, lambda: self.switchFrame((-1, 0)), "Back")
+        # backButton.pack(pady=objectPackPady, side=BOTTOM)
 
         # Create pages for Calculus 1 topics
         for path in textbookPath.iterdir():
@@ -221,13 +227,29 @@ class GUI(object):
     #     (0, 0) is the main frame
     #     (#, 0) is the #th subject frame (i.e. (1, 0) is the frame for precalculus topics)
     #     (#, #) is the page with the text of topic #.# (i.e (1, 1) is topic 1.1: precalc->discontinuities)
+    """
     def switchFrame(self, nextID):
+        print("Made it here")
         if type(self.frames[self.currentFrameID] == Page):
             self.frames[self.currentFrameID].pageNumber = 0
         self.frames[self.currentFrameID].pack_forget()
         next = self.frames[nextID]
         next.pack(expand=True, fill=BOTH)
         self.currentFrameID = nextID
+    """
+    def switchFrame(self, nextID):
+        print("made it to switchFrame")
+        cur = self.frames[self.currentFrameID]
+        if isinstance(cur, Page):
+            cur.pageNumber = 0
+            cur.pack_forget()
+        else:
+            cur.pack_forget()
+
+        nxt = self.frames[nextID]
+        nxt.pack(expand=True, fill=BOTH)
+        self.currentFrameID = nextID
+    
 
 
     # Quit the program

@@ -15,7 +15,7 @@ all three input values as arguments. The animation is then rendered.
 '''
 
 from manim import *
-from limit_animation_runner import limit_animation
+from render_limit_animation import limit_animation
 
 if __name__ == "__main__":
     function = str(input("Enter a function: f(x) = "))

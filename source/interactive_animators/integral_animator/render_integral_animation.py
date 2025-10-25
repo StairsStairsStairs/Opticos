@@ -5,7 +5,7 @@ from scipy.optimize import minimize_scalar
 from scipy.integrate import quad
 # wsl
 # source manim-env/bin/activate
-# manim ./animation_prototypes/integrals/render_integral.py
+# manim ./animation_prototypes/integrals/render_integral_animation.py
 
 class hello(Scene):
     # Gets a value and returns the value clamped to the min and max y values

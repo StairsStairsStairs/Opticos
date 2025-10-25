@@ -1,0 +1,62 @@
+\documentclass{article}
+\usepackage{geometry, graphicx} % Required for inserting images
+
+\title{Opticos User Manual}
+\author{David Green}
+\date{October 2025}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introduction}
+Hello and welcome to the Opticos user manual! In this manual we will be going over wat Opticos is, the different features that the program offers, and how to run each individual feature.
+
+\section*{What is Opticos?}
+Opticos is educational math tool with the goal of visually demonstrating complex math topics using precise computer animations. The name Opticos come from the greek word "optikos", which means visual. When we say that Opticos uses animations, we don't mean the kind used as children's entertainment. We mean the type of animations used in computer simulations, in which objects are moved in a precise way to visualize complex ideas.
+\bigskip
+
+Furthermore, the motivation behind Opticos is that there is lack of modern accesible tools to visualize higher level math concepts. The computer has come such a long way and yet when it comes to math education, we still rely almost exclusively on messy hand drawings on white boards or chalkboards to visualize concepts. With Opticos, we aim to provide an additional supplementary tool to help visually explain math concepts in a clearer and more complete way. We want Opticos to be a useful resource for students who want to learn and a useful resource for instructors who want to help better explain concepts.
+
+\section*{The Two Features of Opticos}
+Opticos has two different features, the \textbf{Interactive Animator} and \textbf{the Opticos Textbook}. The interactive animator is an tool that ask you to input a function and a set of other input values which are then used to create an animation demonstrating a particular concept. The Opticos Textbook is a mini textbook with standard text explanations of math concepts but with a little twist. Accompanying the text explanation are pre-rendered animations to help support said explanations. Let's talk more in detail about each of these two features.
+\pagebreak
+
+\section*{The Interactive Animator}
+
+\subsection*{What is the interactive animator?}
+ Suppose you're a student who wants to a see a concept demonstrated in action on a function that appears in a homework problem, or you're a professor who wants to use a very specific function to visually demonstrate an idea to your class. Drawing it out by hand can sometimes be useful but it can often be messy and inefficient. With the interactive animator, you can input a function along with a set of additional parameters to create a precise animation that demonstrates a particular concept using the function and parameters you gave.
+
+ \subsection*{Types of Interactive Animators Available}
+ As of now, we have two interactive animators with one currently in development. Currently available is the Limit Animator and the Integral Animator. We're currently working on a Derivative Animator with the goal of a prototype version being available by the end of 2025.
+
+ \subsection*{How to run the Interactive Animator}
+ Ideally we would like all the features of Opticos to be runnable through a GUI that can be opened by a single executable file but we're not currently there yet. As of now, the interactive animator can only be run by directly running the source code for each respective animator.\\
+ \\
+ In the root of the repository, open the source directory and then a directory called\\interactive\_animators\\
+ \\
+\includegraphics[width = 6in]{clickSource.png}
+\includegraphics[width = 6in]{clickInteractiveAnimators.png}
+\pagebreak
+
+From here, you will see a repository for each of the different interactive animators.\\
+\\
+\includegraphics[width = 6in]{interactiveAnimatorSelection.png}
+\\
+If you click on one of these, for example, the one for the limit animator, you will see two python files. One is of the form render\_$<$concept$>$\_animation.py and the other is of the form user\_input\_$<$concept$>$.py. Open the one of the form user\_input\_$<$concept$>$.py\\
+\\
+\includegraphics[width = 6in]{clickUserInputLimit.png}
+\\
+From there, run the python file through either your preferred IDE or the terminal. Doing so will prompt you to enter a set of input parameters for the animation.\\
+\\
+\includegraphics[width = 6in]{inputParameters.png}
+\\
+\\
+It will take a little bit of time for the animation to render so wait a bit for the program to do its thing. Once the animation is done being rendered it will save the animation as an mp4 file and and tell you the location of the mp4.\\
+\\
+\includegraphics[width = 6in]{doneRendering.png}
+\\
+\\
+Note that at the bottom it may say "played $n$ animations". In this case it says "played 3 animations" That does not mean that 3 separate animation files were made, that just refers to the number of sub animations generated in the back end that make up the entire mp4 file, so you can just ignore it.
+
+\end{document}
