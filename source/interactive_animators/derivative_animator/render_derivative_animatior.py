@@ -89,6 +89,11 @@ class DefinitionOfADerivitive(Scene):
                 total = total ** float(nums[i])
         
         return total
+    
+
+    #def parse_into_lambda(a, b, c):
+       # return lambda x: (x + a) ** b + c
+
             
 
 
@@ -109,20 +114,21 @@ class DefinitionOfADerivitive(Scene):
             axis_config={"include_numbers": True},
         ) 
         # x_min must be > 0 because log is undefined at 0.
-        graph = ax.plot(lambda x: (x*3) ** 2, x_range=[-10, 10, 0.1], use_smoothing=True)
-        graph2 = ax.plot(lambda v: (((v-h)*3)**2 - (v*3)**2)/h, x_range=[-10, 10, 0.1], use_smoothing=True)
 
-        #self.add(ax, graph)
-        #self.add(ax, graph2)
+        test = lambda x: (x * 1.3) ** 2
+        test2 = lambda x:(x * 2.6)
 
-        self.play(FadeIn(ax),
-                  Succession(
-                      Add(graph2)
-                  )
-                  
-                  
-                  )
-        #self.play(Create(graph.animate(lag_ratio=0.2, run_time=1.5)))
-        self.play(Create(graph2))
+
+        graph = ax.plot(test, x_range=[-10, 10, 0.1], use_smoothing=True)
+
+       # eq = parse_into_lambda(3, 1.2, -3)
+
+        graph2 = ax.plot(test2, x_range=[-10, 10, 0.1], use_smoothing=True)
+        
+        self.add(graph)
+        self.add(graph2)
+        self.play(
+            graph2.animate.shift(LEFT)
+            )
 
 
