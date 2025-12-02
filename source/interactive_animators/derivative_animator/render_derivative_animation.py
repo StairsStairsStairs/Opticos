@@ -1,4 +1,5 @@
 from manim import *
+import numpy as np
 
 class LogScalingExample(Scene):
     def construct(self):
@@ -35,30 +36,43 @@ class DefinitionOfADerivative(Scene):
     
     def construct(self):
         ax = Axes(
-            x_range=[-10, 10, 5],
+            x_range=[-10, 10, 2],
             y_range=[-10, 10, 5],
             tips=False,
             axis_config={"include_numbers": True},
         )
         
         def f(x):
-            return x ** 3 * 3 + 2  
+            return np.sign(x) * abs(x) ** 3 + x * 3 + 2
 
         def g(x):
-            return x * 3 + 3  
+            return 3 * (x ** 2) + 3  
 
-        graph_f = ax.plot(f, x_range=[-10, 10, 0.1], color=BLUE)
-        graph_g = ax.plot(g, x_range=[-10, 10, 0.1], color=RED)
+        polynomial = ax.plot(f, x_range=[-10, 10, 5], color=BLUE, use_smoothing=True)
+        linear = ax.plot(g, x_range=[-10, 10, 5], color=RED, use_smoothing=False)
         
-        label_f = ax.get_graph_label(graph_f, label='f(x) = x^3 * 3 + 2')
-        label_g = ax.get_graph_label(graph_g, label='g(x) = 3x + 3')
-        label_g.shift(DOWN * 4)
+        poly_label = ax.get_graph_label(polynomial, label='f(x) = x^3 + x * 3 + 2')
+        poly_label.shift(DOWN)
+        poly_label.shift(RIGHT)
+        linear_label = ax.get_graph_label(linear, label='g(x) = 3*x^2 + 3')
+        linear_label2 = ax.get_graph_label(linear, label='(Derivative)')
+        linear_label.shift(DOWN * 4)
+        linear_label.shift(RIGHT)
+        linear_label2.shift(DOWN * 5)
+        linear_label2.shift(RIGHT)
 
-        self.add(ax, graph_f, graph_g, label_f, label_g)
+        #self.add(ax, graph_f, graph_g, label_f, label_g)
+        #self.wait(1)
+
+        self.add(ax)
         self.wait(1)
+        self.play(
+            Create(polynomial, run_time=5),
+            FadeIn(poly_label)
+            )
 
         h = 0.0001
-        x_point = 1  
+        x_point = 2  
         derivative_value = self.derivative_calc(f, x_point, h)
 
         derivative_text = Text(f"f'(x) at x = {x_point} is approximately {derivative_value:.2f}")
@@ -67,9 +81,16 @@ class DefinitionOfADerivative(Scene):
         self.wait(2)
 
         tangent_line = self.plot_tangent_line(ax, f, x_point)
-        self.add(tangent_line)
+        self.play(Create(tangent_line, run_time=4))
 
         self.wait(2)
+
+
+        self.play(
+            Create(linear, run_time=5),
+            FadeIn(linear_label),
+            FadeIn(linear_label2)
+            )
     
     def derivative_calc(self, func, x, h):
         """Calculates the numerical derivative using the difference quotient"""
