@@ -29,116 +29,59 @@ class NegitiveTest(Scene):
         self.add(ax, graph)
 
 
-class DefinitionOfADerivitive(Scene):
+from manim import *
 
-    def construct(self):
-        whatever = 2
-
-
-
-    # I stole this function from david
-    #Function that is graphed out and used to find output values at each frame
-    def func(self, fstr, x, op):
-        if isinstance(x, (np.float32, np.float64)):
-            x = float(x)
-        x = str(x)
-
-        #The following code segment parses the string representing the function the user inputted
-        #replaces instances where number are concated with x to be <num>*x
-        if (fstr[0:2] == "-x"):
-            fstr = "-1*" + fstr[1:len(fstr)]
-        i = 0
-        while(i < len(fstr)):
-            if (fstr[i] == "x"):
-                if (fstr[i - 1].isdigit() and i != 0):
-                    fstr = fstr[:i] + "*" + x + fstr[i+1:]
-                else:
-                    fstr = fstr[:i] + x + fstr[i+1:]
-            i += 1
-        if (fstr[0:2] == "--"):
-            fstr = "-1*" + fstr[1:len(fstr)]
-
-        #Replaces instances of - between two  numbers to be +-
-        i = 0
-        while(i < len(fstr)):
-            #Notes checks that theres no e character befor the minus sign to accomodate <num>e-n scientific representation
-            if (fstr[i] == "-" and fstr[i - 1] != "+" and fstr[i - 1] != "*" and fstr[i - 1] != "e" and i != 0):
-                fstr = fstr[:i] + "+-1*" + fstr[i+1:]
-            i += 1
-            #print(x, 4)
-        #divide string into different parts based on the current operation
-        nums = fstr.split(op)
-        
-        #For each part if it's a number, leave it, otherwise repeat 
-        #previous steps using next operation of next highest precedence
-        for i in range(0, len(nums)):
-            if not(nums[i].isdigit()):
-                if (op == "+"):
-                    nums[i] = self.func(nums[i], x, '*')
-                elif (op == "*"):
-                    nums[i] = self.func(nums[i], x, '^')
-                    
-        #Perfrom nums[0] <op> nums[1] <op> ... <op> nums[len(nums - 1)]
-        total = float(nums[0])
-        for i in range(1, len(nums)):
-            if (op == '+'):
-                total += float(nums[i])
-            elif (op == "*"):
-                total *= float(nums[i])
-            elif (op == "^"):
-                total = total ** float(nums[i])
-        
-        return total
+class DefinitionOfADerivative(Scene):
     
-
-    def parse_into_lambda(a, b, c):
-       return lambda x: (x + a) ** b + c
-
-            
-
-
-    def derivitve_calc(self, a):
-        h = 0.00000000001
-        return (func(a+h) - func(a))/h
-
     def construct(self):
-        h = 0.00000000001
-
-        plane = NumberPlane(x_range = [-10, 10, 5], x_length = 4, 
-                            y_range = [-10, 10, 5], y_length = 4).add_coordinates()
-        
         ax = Axes(
             x_range=[-10, 10, 5],
             y_range=[-10, 10, 5],
             tips=False,
             axis_config={"include_numbers": True},
-        ) 
-        # x_min must be > 0 because log is undefined at 0.
-
-        test2 = lambda x:(x * 3 + 3)
-        test = lambda x: (x ** 3) * x*3 + 2
-        # test3 = self.parse_into_lambda(1.3, 2, 0)
-        # test4 = lambda x:(x ** a) * x* b + c
-
+        )
         
-        graph = ax.plot(test, x_range=[-10, 10, 0.1], use_smoothing=True)
-        graph2 = ax.plot(test2, x_range=[-10, 10, 0.1], use_smoothing=True)
+        def f(x):
+            return x ** 3 * 3 + 2  
 
-        self.add(Text("Definition of a Derivative", font_size=36).next_to(graph, DOWN, buff=1.5))
-        self.add(ax)
-        self.add(graph)
+        def g(x):
+            return x * 3 + 3  
 
-        self.play(
-            FadeIn(graph2)
-            )
-        self.wait()
-        """
-        self.wait()
-        self.play(
-            graph2.animate.FadeIn(LEFT)
-            )
-            """
+        graph_f = ax.plot(f, x_range=[-10, 10, 0.1], color=BLUE)
+        graph_g = ax.plot(g, x_range=[-10, 10, 0.1], color=RED)
         
+        label_f = ax.get_graph_label(graph_f, label='f(x) = x^3 * 3 + 2')
+        label_g = ax.get_graph_label(graph_g, label='g(x) = 3x + 3')
+        label_g.shift(DOWN * 4)
+
+        self.add(ax, graph_f, graph_g, label_f, label_g)
+        self.wait(1)
+
+        h = 0.0001
+        x_point = 1  
+        derivative_value = self.derivative_calc(f, x_point, h)
+
+        derivative_text = Text(f"f'(x) at x = {x_point} is approximately {derivative_value:.2f}")
+        derivative_text.to_edge(DOWN)
+        self.play(Write(derivative_text))
+        self.wait(2)
+
+        tangent_line = self.plot_tangent_line(ax, f, x_point)
+        self.add(tangent_line)
+
+        self.wait(2)
+    
+    def derivative_calc(self, func, x, h):
+        """Calculates the numerical derivative using the difference quotient"""
+        return (func(x + h) - func(x)) / h
+    
+    def plot_tangent_line(self, ax, func, x_point):
+        """Returns a Line object representing the tangent at x_point"""
+        tangent_slope = self.derivative_calc(func, x_point, 0.0001)
+        tangent_intercept = func(x_point) - tangent_slope * x_point
+        tangent_line = ax.plot(lambda x: tangent_slope * x + tangent_intercept, x_range=[-10, 10, 0.1], color=YELLOW)
+        return tangent_line
+
 
 if __name__=="__main__":
     main()
