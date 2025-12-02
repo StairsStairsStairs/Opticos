@@ -36,52 +36,57 @@ class DefinitionOfADerivative(Scene):
     
     def construct(self):
         ax = Axes(
-            x_range=[-10, 10, 2],
+            x_range=[-10, 10, 5],
             y_range=[-10, 10, 5],
             tips=False,
             axis_config={"include_numbers": True},
         )
-        
+        """
         def f(x):
             return np.sign(x) * abs(x) ** 3 + x * 3 + 2
+        """
+
+        def f(x):
+            return  x ** 2 + x * 3 + 2
 
         def g(x):
-            return 3 * (x ** 2) + 3  
+            return 2 * x + 3
 
         polynomial = ax.plot(f, x_range=[-10, 10, 5], color=BLUE, use_smoothing=True)
         linear = ax.plot(g, x_range=[-10, 10, 5], color=RED, use_smoothing=False)
         
-        poly_label = ax.get_graph_label(polynomial, label='f(x) = x^3 + x * 3 + 2')
-        poly_label.shift(DOWN)
-        poly_label.shift(RIGHT)
-        linear_label = ax.get_graph_label(linear, label='g(x) = 3*x^2 + 3')
+        poly_label = ax.get_graph_label(polynomial, label='f(x) = x^2 + x * 3 + 2')
+        poly_label.shift(DOWN * 2)
+        linear_label = ax.get_graph_label(linear, label='g(x) = 2 * x + 3')
         linear_label2 = ax.get_graph_label(linear, label='(Derivative)')
         linear_label.shift(DOWN * 4)
-        linear_label.shift(RIGHT)
         linear_label2.shift(DOWN * 5)
-        linear_label2.shift(RIGHT)
 
         #self.add(ax, graph_f, graph_g, label_f, label_g)
         #self.wait(1)
 
         self.add(ax)
         self.wait(1)
-        self.play(
-            Create(polynomial, run_time=5),
-            FadeIn(poly_label)
-            )
+        self.play(Create(polynomial, run_time=5))
+        self.play(FadeIn(poly_label))
 
         h = 0.0001
-        x_point = 2  
-        derivative_value = self.derivative_calc(f, x_point, h)
+        x_point = 1  
+        #derivative_value = self.derivative_calc(f, x_point, h)
 
-        derivative_text = Text(f"f'(x) at x = {x_point} is approximately {derivative_value:.2f}")
-        derivative_text.to_edge(DOWN)
-        self.play(Write(derivative_text))
-        self.wait(2)
+        #derivative_text = Text(f"f'(x) at x = {x_point} is approximately {derivative_value:.2f}")
+        #derivative_text.to_edge(DOWN)
+        #self.play(Write(derivative_text))
+        #self.wait(2)
 
         tangent_line = self.plot_tangent_line(ax, f, x_point)
+        tangent_label = ax.get_graph_label(tangent_line, label='Tangent Line at x = 1')
+        tangent_label.shift(DOWN * 3)
+
+
+
         self.play(Create(tangent_line, run_time=4))
+        self.play(FadeIn(tangent_label))
 
         self.wait(2)
 
