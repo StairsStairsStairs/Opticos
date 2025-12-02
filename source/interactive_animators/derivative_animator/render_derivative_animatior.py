@@ -91,8 +91,8 @@ class DefinitionOfADerivitive(Scene):
         return total
     
 
-    #def parse_into_lambda(a, b, c):
-       # return lambda x: (x + a) ** b + c
+    def parse_into_lambda(a, b, c):
+       return lambda x: (x + a) ** b + c
 
             
 
@@ -104,31 +104,47 @@ class DefinitionOfADerivitive(Scene):
     def construct(self):
         h = 0.00000000001
 
-        plane = NumberPlane(x_range = [-10, 10, 1], x_length = 4, 
-                            y_range = [-10, 10, 1], y_length = 4).add_coordinates()
+        plane = NumberPlane(x_range = [-10, 10, 5], x_length = 4, 
+                            y_range = [-10, 10, 5], y_length = 4).add_coordinates()
         
         ax = Axes(
-            x_range=[-10, 10, 1],
-            y_range=[-10, 10, 1],
+            x_range=[-10, 10, 5],
+            y_range=[-10, 10, 5],
             tips=False,
             axis_config={"include_numbers": True},
         ) 
         # x_min must be > 0 because log is undefined at 0.
 
-        test = lambda x: (x * 1.3) ** 2
-        test2 = lambda x:(x * 2.6)
+        test2 = lambda x:(x * 3 + 3)
+        test = lambda x: (x ** 3) * x*3 + 2
+        # test3 = self.parse_into_lambda(1.3, 2, 0)
+        # test4 = lambda x:(x ** a) * x* b + c
 
-
-        graph = ax.plot(test, x_range=[-10, 10, 0.1], use_smoothing=True)
-
-       # eq = parse_into_lambda(3, 1.2, -3)
-
-        graph2 = ax.plot(test2, x_range=[-10, 10, 0.1], use_smoothing=True)
         
+        graph = ax.plot(test, x_range=[-10, 10, 0.1], use_smoothing=True)
+        graph2 = ax.plot(test2, x_range=[-10, 10, 0.1], use_smoothing=True)
+
+        self.add(Text("Definition of a Derivative", font_size=36).next_to(graph, DOWN, buff=1.5))
+        self.add(ax)
         self.add(graph)
-        self.add(graph2)
+
         self.play(
-            graph2.animate.shift(LEFT)
+            FadeIn(graph2)
             )
+        self.wait()
+        """
+        self.wait()
+        self.play(
+            graph2.animate.FadeIn(LEFT)
+            )
+            """
+        
+
+if __name__=="__main__":
+    main()
+
+
+def main():
+    DefinitionOfADerivitive.derivative_calc(2, 3, 4)
 
 
