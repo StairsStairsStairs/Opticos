@@ -1,6 +1,6 @@
 import sys
 from manim import *
-from basicGraph import create_polynomial, DefinitionOfADerivative
+from render_derivative_animation import create_polynomial, DefinitionOfADerivative
 
 def main():
     if len(sys.argv) < 5:
