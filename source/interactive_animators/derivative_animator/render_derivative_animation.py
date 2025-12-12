@@ -277,16 +277,6 @@ class FallingLadder(Scene):
         self.play(bottom.animate.move_to(axes.c2p(4, 0)), run_time=5)
         self.wait(2)
 
-if __name__=="__main__":
-    main()
-
-
-def main():
-    DefinitionOfADerivitive.derivative_calc(2, 3, 4)
-
-
-
-
 
 if __name__=="__main__":
     main()
