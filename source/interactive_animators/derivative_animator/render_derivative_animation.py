@@ -1,114 +1,3 @@
-from manim import *
-import numpy as np
-
-class LogScalingExample(Scene):
-    def construct(self):
-        ax = Axes(
-            x_range=[0, 10, 1],
-            y_range=[-2, 6, 1],
-            tips=False,
-            axis_config={"include_numbers": True},
-            y_axis_config={"scaling": LogBase(custom_labels=True)},
-        )
-
-        # x_min must be > 0 because log is undefined at 0.
-        graph = ax.plot(lambda x: x ** 2, x_range=[0.001, 10], use_smoothing=False)
-        self.add(ax, graph)
-
-
-class NegitiveTest(Scene):
-    def construct(self):
-        ax = Axes(
-            x_range=[-10, 10, 1],
-            y_range=[-1000, 1000, 100],
-            tips=False,
-            axis_config={"include_numbers": True},
-        )
-
-        # x_min must be > 0 because log is undefined at 0.
-        graph = ax.plot(lambda x: (-1 * x) ** 3, x_range=[-10, 10], use_smoothing=False)
-        self.add(ax, graph)
-
-
-from manim import *
-
-class DefinitionOfADerivative(Scene):
-    
-    def construct(self):
-        ax = Axes(
-            x_range=[-10, 10, 5],
-            y_range=[-10, 10, 5],
-            tips=False,
-            axis_config={"include_numbers": True},
-        )
-        """
-        def f(x):
-            return np.sign(x) * abs(x) ** 3 + x * 3 + 2
-        """
-
-        def f(x):
-            return  x ** 2 + x * 3 + 2
-
-        def g(x):
-            return 2 * x + 3
-
-        polynomial = ax.plot(f, x_range=[-10, 10, 5], color=BLUE, use_smoothing=True)
-        linear = ax.plot(g, x_range=[-10, 10, 5], color=RED, use_smoothing=False)
-        
-        poly_label = ax.get_graph_label(polynomial, label='f(x) = x^2 + x * 3 + 2')
-        poly_label.shift(DOWN * 2)
-        linear_label = ax.get_graph_label(linear, label='g(x) = 2 * x + 3')
-        linear_label2 = ax.get_graph_label(linear, label='(Derivative)')
-        linear_label.shift(DOWN * 4)
-        linear_label2.shift(DOWN * 5)
-
-        #self.add(ax, graph_f, graph_g, label_f, label_g)
-        #self.wait(1)
-
-        self.add(ax)
-        self.wait(1)
-        self.play(Create(polynomial, run_time=5))
-        self.play(FadeIn(poly_label))
-
-        h = 0.0001
-        x_point = 1  
-        #derivative_value = self.derivative_calc(f, x_point, h)
-
-        #derivative_text = Text(f"f'(x) at x = {x_point} is approximately {derivative_value:.2f}")
-        #derivative_text.to_edge(DOWN)
-        #self.play(Write(derivative_text))
-        #self.wait(2)
-
-        tangent_line = self.plot_tangent_line(ax, f, x_point)
-        tangent_label = ax.get_graph_label(tangent_line, label='Tangent Line at x = 1')
-        tangent_label.shift(DOWN * 3)
-
-
-
-        self.play(Create(tangent_line, run_time=4))
-        self.play(FadeIn(tangent_label))
-
-        self.wait(2)
-
-
-        self.play(
-            Create(linear, run_time=5),
-            FadeIn(linear_label),
-            FadeIn(linear_label2)
-            )
-    
-    def derivative_calc(self, func, x, h):
-        """Calculates the numerical derivative using the difference quotient"""
-        return (func(x + h) - func(x)) / h
-    
-    def plot_tangent_line(self, ax, func, x_point):
-        """Returns a Line object representing the tangent at x_point"""
-        tangent_slope = self.derivative_calc(func, x_point, 0.0001)
-        tangent_intercept = func(x_point) - tangent_slope * x_point
-        tangent_line = ax.plot(lambda x: tangent_slope * x + tangent_intercept, x_range=[-10, 10, 0.1], color=YELLOW)
-        return tangent_line
-    
-    from manim import *
 import numpy as np
 
 class LogScalingExample(Scene):
@@ -222,59 +111,58 @@ class FallingLadder(Scene):
     def construct(self):
         L = 5
 
-        axes = Axes(
+        plane = NumberPlane(
             x_range=[0, 6],
             y_range=[0, 6],
             axis_config={"include_numbers": True}
-        )
-        labels = axes.get_axis_labels(x_label="x", y_label="y")
-        self.add(axes, labels)
+        ).scale(0.9)
 
-        bottom = Dot(axes.c2p(1, 0), color=BLUE)
+        labels = plane.get_axis_labels("x", "y")
+        self.add(plane, labels)
+
+        bottom = Dot(plane.c2p(1, 0), color=BLUE)
         y0 = np.sqrt(L**2 - 1**2)
-        top = Dot(axes.c2p(0, y0), color=RED)
+        top = Dot(plane.c2p(0, y0), color=RED)
         ladder = Line(bottom.get_center(), top.get_center(), color=YELLOW)
-
         self.add(bottom, top, ladder)
 
-        def update_ladder(mob):
-            mob.become(Line(bottom.get_center(), top.get_center(), color=YELLOW))
-        ladder.add_updater(update_ladder)
+        ladder.add_updater(lambda mob: mob.become(Line(bottom.get_center(), top.get_center(), color=YELLOW)))
 
+
+        # please just work this is like the 4th time I rewrote this
         def update_top(mob):
-            x = axes.p2c(bottom.get_center())[0]
+            x = plane.p2c(bottom.get_center())[0]
             y = np.sqrt(max(L**2 - x**2, 0))
-            mob.move_to(axes.c2p(0, y))
+            mob.move_to(plane.c2p(0, y))
         top.add_updater(update_top)
 
-        ladder_label = Text("5 ft ladder", font_size=28, color=WHITE)
-
-        # please fix this later its so ugly to look at it hurts
-        def update_label(mob):
-            mob.become(Text("5 ft ladder", font_size=28, color=WHITE))
-            mob.move_to(ladder.get_center())
-
+        def make_ladder_label():
             vec = ladder.get_end() - ladder.get_start()
             angle = np.arctan2(vec[1], vec[0])
-
-            if angle > np.pi/2:
+            if angle > np.pi / 2:
                 angle -= np.pi
-            elif angle < -np.pi/2:
+            elif angle < -np.pi / 2:
                 angle += np.pi
+            perp = np.array([-vec[1], vec[0], 0])
+            norm = np.linalg.norm(perp)
+            perp_unit = perp / norm if norm > 0 else np.array([0, 1, 0])
 
-            mob.rotate(angle, about_point=mob.get_center())
-            mob.shift(UP*0.3)
+            label = Text("5 ft ladder", font_size=28, color=WHITE)
+            label.move_to(ladder.get_center())
+            label.rotate(angle, about_point=label.get_center())
+            label.shift(perp_unit * -0.25) 
+            return label
 
-
-        ladder_label.add_updater(update_label)
+        ladder_label = always_redraw(make_ladder_label)
         self.add(ladder_label)
 
+        # I should probably add more context to this
         rate_label = Text("Falling down at 1/2 ft per second", font_size=24, color=WHITE)
-        rate_label.next_to(axes, DOWN)
-        rate_label.shift(UP*0.3)
+        rate_label.next_to(plane, DOWN)
+        rate_label.shift(UP * 0.3)
         self.add(rate_label)
 
-        self.play(bottom.animate.move_to(axes.c2p(4, 0)), run_time=5)
+        self.play(bottom.animate.move_to(plane.c2p(4, 0)), run_time=5)
         self.wait(2)
 
 
