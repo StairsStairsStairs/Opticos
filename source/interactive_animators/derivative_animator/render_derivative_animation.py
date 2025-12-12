@@ -218,9 +218,11 @@ class DefinitionOfADerivative(Scene):
         tangent_line = ax.plot(lambda x: tangent_slope * x + tangent_intercept, x_range=[-10, 10, 0.1], color=YELLOW)
         return tangent_line
 
+from manim import *
+import numpy as np
+
 class FallingLadder(Scene):
     def construct(self):
-
         L = 5
 
         axes = Axes(
@@ -228,34 +230,46 @@ class FallingLadder(Scene):
             y_range=[0, 6],
             axis_config={"include_numbers": True}
         )
-        self.add(axes)
+        labels = axes.get_axis_labels(x_label="x", y_label="y")
+        self.add(axes, labels)
 
-        bottom = Dot(axes.c2p(3, 0), color=BLUE)
-        top = Dot(axes.c2p(0, 4), color=RED)
+        bottom = Dot(axes.c2p(1, 0), color=BLUE)
+        y0 = np.sqrt(L**2 - 1**2)
+        top = Dot(axes.c2p(0, y0), color=RED)
         ladder = Line(bottom.get_center(), top.get_center(), color=YELLOW)
 
         self.add(bottom, top, ladder)
 
         def update_ladder(mob):
             mob.become(Line(bottom.get_center(), top.get_center(), color=YELLOW))
-
         ladder.add_updater(update_ladder)
 
-        self.play(
-            bottom.animate.move_to(axes.c2p(4, 0)),
-            top.animate.move_to(axes.c2p(0, 3)),
-            run_time=3
-        )
+        # Why arent you working??!?!?!
+        def update_top(mob):
+            x = axes.p2c(bottom.get_center())[0]
+            y = np.sqrt(max(L**2 - x**2, 0))
+            mob.move_to(axes.c2p(0, y))
+        top.add_updater(update_top)
 
-        self.wait()
+        ladder_label = Text("5 ft ladder", font_size=28, color=WHITE)
 
-        self.play(
-            bottom.animate.move_to(axes.c2p(5, 0)),
-            top.animate.move_to(axes.c2p(0, 0)),
-            run_time=3
-        )
+        def update_label(mob):
+            mob.move_to(ladder.get_center())
+            vec = ladder.get_end() - ladder.get_start()
+            angle = np.arctan2(vec[1], vec[0])
+            mob.set_angle(angle)
+            mob.shift(UP*0.3)
 
-        self.wait()
+        ladder_label.add_updater(update_label)
+        self.add(ladder_label)
+
+        rate_label = Text("Falling down at 1/2 ft per second", font_size=24, color=WHITE)
+        rate_label.next_to(axes, DOWN)
+        rate_label.shift(UP*0.3)
+        self.add(rate_label)
+
+        self.play(bottom.animate.move_to(axes.c2p(4, 0)), run_time=5)
+        self.wait(2)
 
 
 if __name__=="__main__":
