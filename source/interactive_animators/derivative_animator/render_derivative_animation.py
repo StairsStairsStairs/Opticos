@@ -1,6 +1,7 @@
 from manim import *
 import numpy as np
 import argparse
+import os
 
 class LogScalingExample(Scene):
     def construct(self):
@@ -31,19 +32,15 @@ class NegitiveTest(Scene):
         self.add(ax, graph)
 
 
-from manim import *
-
 class DefinitionOfADerivative(Scene):
     def construct(self):
         # Parse args only when manim executes this file
-        parser = argparse.ArgumentParser(add_help=False)
-        parser.add_argument("--a", type=float, default=2.0)
-        parser.add_argument("--b", type=float, default=3.0)
-        parser.add_argument("--c", type=float, default=2.0)
-        args, _ = parser.parse_known_args()
+        a = float(os.environ.get("POLY_A", "2"))
+        b = float(os.environ.get("POLY_B", "3"))
+        c = float(os.environ.get("POLY_C", "2"))
 
-        f = create_polynomial(args.a, args.b, args.c)
-        label = f"f(x) = {args.a}x^2 + {args.b}x + {args.c}"
+        f = self.create_polynomial( a, b, c)
+        label = f"f(x) = {a}x^2 + {b}x + {c}"
 
         ax = Axes(
             x_range=[-10, 10, 1],
@@ -75,7 +72,7 @@ class DefinitionOfADerivative(Scene):
         intercept = func(x_point) - slope * x_point
         return ax.plot(lambda x: slope*x + intercept, x_range=[-10, 10, 0.1], color=YELLOW)
     
-    def create_polynomial(a:float, b:float, c:float):
+    def create_polynomial(self, a:float, b:float, c:float):
         def r(x):
             return a * x**2 + b * x + c
         return r

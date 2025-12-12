@@ -1,5 +1,4 @@
-import sys
-import subprocess
+import sys, os, subprocess
 
 def main():
     if len(sys.argv) < 5:
@@ -13,19 +12,13 @@ def main():
         print("Unknown choice. Only 'first' is supported.")
         sys.exit(1)
 
-    cmd = [
-        "manim",
-        "-pql",
-        "animations.py",
-        "DefinitionOfADerivative",
-        "--a", a,
-        "--b", b,
-        "--c", c,
-    ]
+    env = os.environ.copy()
+    env["POLY_A"] = a
+    env["POLY_B"] = b
+    env["POLY_C"] = c
 
-    print("Running:", " ".join(cmd))
-    subprocess.run(cmd, check=True)
+    cmd = [sys.executable, "-m", "manim", "-pql", "basicGraph.py", "DefinitionOfADerivative"]
+    subprocess.run(cmd, check=True, env=env)
 
 if __name__ == "__main__":
     main()
-
