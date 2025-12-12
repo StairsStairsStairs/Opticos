@@ -218,9 +218,6 @@ class DefinitionOfADerivative(Scene):
         tangent_line = ax.plot(lambda x: tangent_slope * x + tangent_intercept, x_range=[-10, 10, 0.1], color=YELLOW)
         return tangent_line
 
-from manim import *
-import numpy as np
-
 class FallingLadder(Scene):
     def construct(self):
         L = 5
@@ -244,7 +241,6 @@ class FallingLadder(Scene):
             mob.become(Line(bottom.get_center(), top.get_center(), color=YELLOW))
         ladder.add_updater(update_ladder)
 
-        # Why arent you working??!?!?!
         def update_top(mob):
             x = axes.p2c(bottom.get_center())[0]
             y = np.sqrt(max(L**2 - x**2, 0))
@@ -253,12 +249,22 @@ class FallingLadder(Scene):
 
         ladder_label = Text("5 ft ladder", font_size=28, color=WHITE)
 
+        # please fix this later its so ugly to look at it hurts
         def update_label(mob):
+            mob.become(Text("5 ft ladder", font_size=28, color=WHITE))
             mob.move_to(ladder.get_center())
+
             vec = ladder.get_end() - ladder.get_start()
             angle = np.arctan2(vec[1], vec[0])
-            mob.set_angle(angle)
+
+            if angle > np.pi/2:
+                angle -= np.pi
+            elif angle < -np.pi/2:
+                angle += np.pi
+
+            mob.rotate(angle, about_point=mob.get_center())
             mob.shift(UP*0.3)
+
 
         ladder_label.add_updater(update_label)
         self.add(ladder_label)
@@ -270,7 +276,6 @@ class FallingLadder(Scene):
 
         self.play(bottom.animate.move_to(axes.c2p(4, 0)), run_time=5)
         self.wait(2)
-
 
 if __name__=="__main__":
     main()
