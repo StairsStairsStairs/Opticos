@@ -1,5 +1,6 @@
 from manim import *
 import numpy as np
+import argparse
 
 class LogScalingExample(Scene):
     def construct(self):
@@ -33,33 +34,38 @@ class NegitiveTest(Scene):
 from manim import *
 
 class DefinitionOfADerivative(Scene):
-    def __init__(self, func=None, label="f(x)", **kwargs):
-        super().__init__(**kwargs)
-        self.func = func
-        self.label = label
-
     def construct(self):
+        # Parse args only when manim executes this file
+        parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument("--a", type=float, default=2.0)
+        parser.add_argument("--b", type=float, default=3.0)
+        parser.add_argument("--c", type=float, default=2.0)
+        args, _ = parser.parse_known_args()
+
+        f = create_polynomial(args.a, args.b, args.c)
+        label = f"f(x) = {args.a}x^2 + {args.b}x + {args.c}"
+
         ax = Axes(
             x_range=[-10, 10, 1],
             y_range=[-10, 10, 1],
             tips=False,
             axis_config={"include_numbers": True},
         )
-
-        polynomial = ax.plot(self.func, x_range=[-10, 10, 0.1], color=BLUE)
-        poly_label = ax.get_graph_label(polynomial, label=self.label)
+        poly = ax.plot(f, x_range=[-10, 10, 0.1], color=BLUE)
+        poly_label = ax.get_graph_label(poly, label=label)
 
         self.add(ax)
-        self.play(Create(polynomial, run_time=3))
+        self.play(Create(poly, run_time=3))
         self.play(FadeIn(poly_label))
 
-        tangent_line = self.plot_tangent_line(ax, self.func, 1)
-        tangent_label = ax.get_graph_label(tangent_line, label="Tangent at x=1")
-        tangent_label.shift(DOWN*2)
+        slope = (f(1 + 1e-4) - f(1)) / 1e-4
+        intercept = f(1) - slope * 1
+        tangent = ax.plot(lambda x: slope*x + intercept, x_range=[-10, 10, 0.1], color=YELLOW)
+        t_label = ax.get_graph_label(tangent, label="Tangent at x=1").shift(DOWN*2)
 
-        self.play(Create(tangent_line, run_time=3))
-        self.play(FadeIn(tangent_label))
-        self.wait(2)
+        self.play(Create(tangent, run_time=3))
+        self.play(FadeIn(t_label))
+        self.wait(1)
 
     def derivative_calc(self, func, x, h=1e-4):
         return (func(x + h) - func(x)) / h
