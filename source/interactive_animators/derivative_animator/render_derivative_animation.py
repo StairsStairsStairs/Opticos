@@ -109,62 +109,71 @@ class DefinitionOfADerivative(Scene):
 
 class FallingLadder(Scene):
     def construct(self):
-        L = 5
+        self.L = 5
 
-        plane = NumberPlane(
+        self.plane = NumberPlane(
             x_range=[0, 6],
             y_range=[0, 6],
             axis_config={"include_numbers": True}
         ).scale(0.9)
 
-        labels = plane.get_axis_labels("x", "y")
-        self.add(plane, labels)
+        labels = self.plane.get_axis_labels("x", "y")
+        self.add(self.plane, labels)
 
-        bottom = Dot(plane.c2p(1, 0), color=BLUE)
-        y0 = np.sqrt(L**2 - 1**2)
-        top = Dot(plane.c2p(0, y0), color=RED)
-        ladder = Line(bottom.get_center(), top.get_center(), color=YELLOW)
-        self.add(bottom, top, ladder)
+        self.bottom = Dot(self.plane.c2p(1, 0), color=BLUE)
+        y0 = np.sqrt(self.L**2 - 1**2)
+        self.top = Dot(self.plane.c2p(0, y0), color=RED)
+        self.ladder = Line(self.bottom.get_center(), self.top.get_center(), color=YELLOW)
+        self.add(self.bottom, self.top, self.ladder)
 
-        ladder.add_updater(lambda mob: mob.become(Line(bottom.get_center(), top.get_center(), color=YELLOW)))
+        self.ladder.add_updater(lambda mob: mob.become(
+            Line(self.bottom.get_center(), self.top.get_center(), color=YELLOW)
+        ))
 
+        self.top.add_updater(self.update_top)
 
-        # please just work this is like the 4th time I rewrote this
-        def update_top(mob):
-            x = plane.p2c(bottom.get_center())[0]
-            y = np.sqrt(max(L**2 - x**2, 0))
-            mob.move_to(plane.c2p(0, y))
-        top.add_updater(update_top)
-
-        def make_ladder_label():
-            vec = ladder.get_end() - ladder.get_start()
-            angle = np.arctan2(vec[1], vec[0])
-            if angle > np.pi / 2:
-                angle -= np.pi
-            elif angle < -np.pi / 2:
-                angle += np.pi
-            perp = np.array([-vec[1], vec[0], 0])
-            norm = np.linalg.norm(perp)
-            perp_unit = perp / norm if norm > 0 else np.array([0, 1, 0])
-
-            label = Text("5 ft ladder", font_size=28, color=WHITE)
-            label.move_to(ladder.get_center())
-            label.rotate(angle, about_point=label.get_center())
-            label.shift(perp_unit * -0.25) 
-            return label
-
-        ladder_label = always_redraw(make_ladder_label)
+        ladder_label = always_redraw(self.make_ladder_label)
         self.add(ladder_label)
 
-        # I should probably add more context to this
         rate_label = Text("Falling down at 1/2 ft per second", font_size=24, color=WHITE)
-        rate_label.next_to(plane, DOWN)
+        rate_label.next_to(self.plane, DOWN)
         rate_label.shift(UP * 0.3)
         self.add(rate_label)
 
-        self.play(bottom.animate.move_to(plane.c2p(4, 0)), run_time=5)
+        self.fall_ladder(speed=0.5)
+
         self.wait(2)
 
+    def update_top(self, mob):
+        x = self.plane.p2c(self.bottom.get_center())[0]
+        y = np.sqrt(max(self.L**2 - x**2, 0))
+        mob.move_to(self.plane.c2p(0, y))
+
+    def make_ladder_label(self):
+        vec = self.ladder.get_end() - self.ladder.get_start()
+        angle = np.arctan2(vec[1], vec[0])
+
+        if angle > np.pi / 2:
+            angle -= np.pi
+        elif angle < -np.pi / 2:
+            angle += np.pi
+
+        perp = np.array([-vec[1], vec[0], 0])
+        norm = np.linalg.norm(perp)
+        perp_unit = perp / norm if norm > 0 else np.array([0, 1, 0])
+
+        label = Text("5 ft ladder", font_size=28, color=WHITE)
+        label.move_to(self.ladder.get_center())
+        label.rotate(angle, about_point=label.get_center())
+        label.shift(perp_unit * -0.25)  # offset above line
+        return label
+
+    def fall_ladder(self, speed: float):
+        start_x = self.plane.p2c(self.bottom.get_center())[0]
+        end_x = 4
+        distance = end_x - start_x
+        run_time = distance / speed
+        self.play(self.bottom.animate.move_to(self.plane.c2p(end_x, 0)), run_time=run_time)
 
 if __name__=="__main__":
     main()
