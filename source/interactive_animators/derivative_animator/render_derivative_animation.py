@@ -147,50 +147,41 @@ class FallingLadder(Scene):
         self.play(self.bottom.animate.move_to(self.plane.c2p(end_x, 0)), run_time=run_time)
 
 
-class MotionProblem(Scene):
-    def s(self, t):
-        return t**3 - 3*t**2 - 8*t + 3
-
-    def v(self, t):
-        return 3*t**2 - 6*t - 8
-
-    def a(self, t):
-        return 6*t - 6
-
-    def construct(self):
+def construct(self):
         ax = Axes(
-            x_range=[-10, 10, 1],
-            y_range=[-5, 5, 1],
+            x_range=[-50, 50, 10],
+            y_range=[-10, 10, 2],
             axis_config={"include_numbers": False, "stroke_color": GREY, "stroke_opacity": 0.3},
             tips=False
         )
         self.add(ax)
 
-        ball = Dot(ax.c2p(self.s(0), 0), color=BLUE).scale(3.0)
+        ball = Dot(color=BLUE).scale(3.0)
         self.add(ball)
 
-        def ball_path(t):
-            return ax.c2p(self.s(t), 0)
+        time_tracker = ValueTracker(1)
 
-        self.play(MoveAlongPath(ball, ParametricFunction(lambda t: ball_path(t), t_range=[0, 4])), run_time=6)
+        ball.add_updater(lambda m: m.move_to(ax.c2p(self.s(time_tracker.get_value()), 0)))
 
-        t_mid = 2
-        ball.move_to(ax.c2p(self.s(t_mid), 0))
+        self.play(time_tracker.animate.set_value(4), run_time=8, rate_func=linear)
 
-        vel_value = self.v(t_mid)
+        t_mid = time_tracker.get_value()
+
+        vel_dir = np.sign(self.v(t_mid)) or 1
         vel_arrow = Arrow(
-            start=ball.get_center() + np.array([0.5, 0, 0]),  
-            end=ball.get_center() + np.array([vel_value*0.5, 0, 0]),  
+            start=ball.get_center() + UP*1.5,
+            end=ball.get_center() + UP*1.5 + np.array([vel_dir*5, 0, 0]),
             buff=0,
             color=GREEN,
             stroke_width=10
         )
         vel_label = Text("Velocity", font_size=36, color=GREEN).next_to(vel_arrow, UP)
 
-        acc_value = self.a(t_mid)
+
+        acc_dir = np.sign(self.a(t_mid)) or 1
         acc_arrow = Arrow(
-            start=ball.get_center() - np.array([0.5, 0, 0]), 
-            end=ball.get_center() + np.array([acc_value*0.5, 0, 0]),  
+            start=ball.get_center() + DOWN*1.5,
+            end=ball.get_center() + DOWN*1.5 + np.array([acc_dir*5, 0, 0]),
             buff=0,
             color=RED,
             stroke_width=10
@@ -199,6 +190,17 @@ class MotionProblem(Scene):
 
         self.play(Create(vel_arrow), Create(acc_arrow), FadeIn(vel_label), FadeIn(acc_label))
         self.wait(3)
+
+
+
+
+
+if __name__=="__main__":
+    main()
+
+
+def main():
+    DefinitionOfADerivitive.derivative_calc(2, 3, 4)
 
 
 
