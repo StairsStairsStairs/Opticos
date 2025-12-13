@@ -1,37 +1,11 @@
 from manim import *
 import numpy as np
-import argparse
 import os
 
-class LogScalingExample(Scene):
-    def construct(self):
-        ax = Axes(
-            x_range=[0, 10, 1],
-            y_range=[-2, 6, 1],
-            tips=False,
-            axis_config={"include_numbers": True},
-            y_axis_config={"scaling": LogBase(custom_labels=True)},
-        )
-
-        # x_min must be > 0 because log is undefined at 0.
-        graph = ax.plot(lambda x: x ** 2, x_range=[0.001, 10], use_smoothing=False)
-        self.add(ax, graph)
 
 
-class NegitiveTest(Scene):
-    def construct(self):
-        ax = Axes(
-            x_range=[-10, 10, 1],
-            y_range=[-1000, 1000, 100],
-            tips=False,
-            axis_config={"include_numbers": True},
-        )
-
-        # x_min must be > 0 because log is undefined at 0.
-        graph = ax.plot(lambda x: (-1 * x) ** 3, x_range=[-10, 10], use_smoothing=False)
-        self.add(ax, graph)
-
-
+# Generates the definition of a deriative of a graph
+# Used to plot the deriavtive line too but I got rid of that
 class DefinitionOfADerivative(Scene):
     def construct(self):
         # Parse args only when manim executes this file
@@ -39,9 +13,11 @@ class DefinitionOfADerivative(Scene):
         b = float(os.environ.get("POLY_B", "3"))
         c = float(os.environ.get("POLY_C", "2"))
 
+        # creates the polynomial
         f = self.create_polynomial( a, b, c)
         label = f"f(x) = {a}x^2 + {b}x + {c}"
 
+        # generates the axes
         ax = Axes(
             x_range=[-10, 10, 1],
             y_range=[-10, 10, 1],
@@ -55,6 +31,7 @@ class DefinitionOfADerivative(Scene):
         self.play(Create(poly, run_time=3))
         self.play(FadeIn(poly_label))
 
+        #Generates the tangent line and places it on the graph
         slope = (f(1 + 1e-4) - f(1)) / 1e-4
         intercept = f(1) - slope * 1
         tangent = ax.plot(lambda x: slope*x + intercept, x_range=[-10, 10, 0.1], color=YELLOW)
@@ -67,6 +44,7 @@ class DefinitionOfADerivative(Scene):
     def derivative_calc(self, func, x, h=1e-4):
         return (func(x + h) - func(x)) / h
 
+    #Helper function to generate the tangent line of a polynomal at a certain point
     def plot_tangent_line(self, ax, func, x_point):
         slope = self.derivative_calc(func, x_point)
         intercept = func(x_point) - slope * x_point
@@ -77,7 +55,7 @@ class DefinitionOfADerivative(Scene):
             return a * x**2 + b * x + c
         return r
 
-
+# Generates a releated Rates example, most importantly the FallingLadder Problem
 class FallingLadder(Scene):
     def construct(self):
         self.L = 5
@@ -97,6 +75,7 @@ class FallingLadder(Scene):
         self.ladder = Line(self.bottom.get_center(), self.top.get_center(), color=YELLOW)
         self.add(self.bottom, self.top, self.ladder)
 
+        # changes the position of the ladder as its falling down
         self.ladder.add_updater(lambda mob: mob.become(
             Line(self.bottom.get_center(), self.top.get_center(), color=YELLOW)
         ))
@@ -106,6 +85,7 @@ class FallingLadder(Scene):
         ladder_label = always_redraw(self.make_ladder_label)
         self.add(ladder_label)
 
+        # Displays the nature of the problem, subject to change
         rate_label = Text("Falling down at 1/2 ft per second", font_size=24, color=WHITE)
         rate_label.next_to(self.plane, DOWN)
         rate_label.shift(UP * 0.3)
@@ -120,6 +100,8 @@ class FallingLadder(Scene):
         y = np.sqrt(max(self.L**2 - x**2, 0))
         mob.move_to(self.plane.c2p(0, y))
 
+    # This puts the label for the ladder, perpendicularly to the ladder,
+    # It looks "Nice", still took alot of time to do though
     def make_ladder_label(self):
         vec = self.ladder.get_end() - self.ladder.get_start()
         angle = np.arctan2(vec[1], vec[0])
@@ -136,9 +118,11 @@ class FallingLadder(Scene):
         label = Text("5 ft ladder", font_size=28, color=WHITE)
         label.move_to(self.ladder.get_center())
         label.rotate(angle, about_point=label.get_center())
-        label.shift(perp_unit * -0.25)  # offset above line
+        label.shift(perp_unit * -0.25)  
         return label
 
+    # This makes the "Ladder" fall, AKA value of the intersection between it and the X access incerases,
+    # while the value between the interesection and the y access decreases
     def fall_ladder(self, speed: float):
         start_x = self.plane.p2c(self.bottom.get_center())[0]
         end_x = 4
@@ -146,8 +130,22 @@ class FallingLadder(Scene):
         run_time = distance / speed
         self.play(self.bottom.animate.move_to(self.plane.c2p(end_x, 0)), run_time=run_time)
 
+# This is still very buggy and unfinished, the movement of the ball is still slow and clunky, and the arrows
+# of the graph are not attached to the ball, rather they are placed randomly
 
-def construct(self):
+#Generates a unfinished motion problem example, where a point moves across a line
+#where there given position is defined by an equation
+class MotionProblem(Scene):
+    def s(self, t):
+        return t**3 - 3*t**2 - 8*t + 3
+
+    def v(self, t):
+        return 3*t**2 - 6*t - 8
+
+    def a(self, t):
+        return 6*t - 6
+
+    def construct(self):
         ax = Axes(
             x_range=[-50, 50, 10],
             y_range=[-10, 10, 2],
@@ -159,14 +157,14 @@ def construct(self):
         ball = Dot(color=BLUE).scale(3.0)
         self.add(ball)
 
+        # Keeps track of the ball's cordinates in real time and displays them on the graph
         time_tracker = ValueTracker(1)
-
         ball.add_updater(lambda m: m.move_to(ax.c2p(self.s(time_tracker.get_value()), 0)))
-
         self.play(time_tracker.animate.set_value(4), run_time=8, rate_func=linear)
 
         t_mid = time_tracker.get_value()
 
+        # Generates the Velocity arrow
         vel_dir = np.sign(self.v(t_mid)) or 1
         vel_arrow = Arrow(
             start=ball.get_center() + UP*1.5,
@@ -177,7 +175,7 @@ def construct(self):
         )
         vel_label = Text("Velocity", font_size=36, color=GREEN).next_to(vel_arrow, UP)
 
-
+        # Generates the Accleration arrow
         acc_dir = np.sign(self.a(t_mid)) or 1
         acc_arrow = Arrow(
             start=ball.get_center() + DOWN*1.5,
@@ -192,15 +190,6 @@ def construct(self):
         self.wait(3)
 
 
-
-
-
-if __name__=="__main__":
-    main()
-
-
-def main():
-    DefinitionOfADerivitive.derivative_calc(2, 3, 4)
 
 
 
