@@ -148,66 +148,57 @@ class FallingLadder(Scene):
 
 
 class MotionProblem(Scene):
-    
-    # Position function
     def s(self, t):
         return t**3 - 3*t**2 - 8*t + 3
 
-    # Velocity = derivative of s(t)
     def v(self, t):
         return 3*t**2 - 6*t - 8
 
-    # Acceleration = derivative of v(t)
     def a(self, t):
         return 6*t - 6
-    
+
     def construct(self):
-        # Axes for reference
         ax = Axes(
             x_range=[-10, 10, 1],
-            y_range=[-10, 10, 1],
-            axis_config={"include_numbers": True},
+            y_range=[-5, 5, 1],
+            axis_config={"include_numbers": False, "stroke_color": GREY, "stroke_opacity": 0.3},
             tips=False
         )
         self.add(ax)
 
-        # Ball (Dot) moving along x-axis according to s(t)
-        ball = Dot(ax.c2p(self.s(0), 0), color=BLUE)
+        ball = Dot(ax.c2p(self.s(0), 0), color=BLUE).scale(3.0)
         self.add(ball)
 
-        # Animate motion for t from 0 to 4
         def ball_path(t):
             return ax.c2p(self.s(t), 0)
 
         self.play(MoveAlongPath(ball, ParametricFunction(lambda t: ball_path(t), t_range=[0, 4])), run_time=6)
 
-        # Stop midway (say at t=2)
         t_mid = 2
         ball.move_to(ax.c2p(self.s(t_mid), 0))
 
-        # Velocity arrow
         vel_value = self.v(t_mid)
         vel_arrow = Arrow(
-            start=ball.get_center(),
-            end=ball.get_center() + np.array([vel_value*0.1, 0, 0]),
+            start=ball.get_center() + np.array([0.5, 0, 0]),  
+            end=ball.get_center() + np.array([vel_value*0.5, 0, 0]),  
             buff=0,
-            color=GREEN
+            color=GREEN,
+            stroke_width=10
         )
-        vel_label = Text("Velocity", font_size=24, color=GREEN).next_to(vel_arrow, UP)
+        vel_label = Text("Velocity", font_size=36, color=GREEN).next_to(vel_arrow, UP)
 
-        # Acceleration arrow
         acc_value = self.a(t_mid)
         acc_arrow = Arrow(
-            start=ball.get_center(),
-            end=ball.get_center() + np.array([acc_value*0.1, 0, 0]),
+            start=ball.get_center() - np.array([0.5, 0, 0]), 
+            end=ball.get_center() + np.array([acc_value*0.5, 0, 0]),  
             buff=0,
-            color=RED
+            color=RED,
+            stroke_width=10
         )
-        acc_label = Text("Acceleration", font_size=24, color=RED).next_to(acc_arrow, DOWN)
+        acc_label = Text("Acceleration", font_size=36, color=RED).next_to(acc_arrow, DOWN)
 
-        self.play(Create(vel_arrow), FadeIn(vel_label))
-        self.play(Create(acc_arrow), FadeIn(acc_label))
-        self.wait(2)
+        self.play(Create(vel_arrow), Create(acc_arrow), FadeIn(vel_label), FadeIn(acc_label))
+        self.wait(3)
 
 
 
